@@ -27,7 +27,8 @@ def _kcf_create(bounding_box, frame):
     Create an OpenCV KCF Tracker object.
     '''
     tracker = cv2.TrackerKCF_create()
-    tracker.init(frame, tuple(bounding_box))
+    bounding_box_tuple = tuple([int(x) for x in bounding_box])
+    tracker.init(frame, bounding_box_tuple)
     return tracker
 
 def get_tracker(algorithm, bounding_box, frame):
