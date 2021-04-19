@@ -8,19 +8,18 @@ from PyQt5.QtCore import Qt, QDir
 
 # custom imports:
 from utils import Utils
-from const import BUTTON_OPEN_IMG, BUTTON_SAVE_IMG, BUTTON_SAVE_CONFIG, BUTTON_CAPTURE_IMG, SOURCE_IMG_PATH, OUTPUT_IMG_CV2, MASK_IMG_CV2, SLIDER_LABELS, CSV_CONFIG_KEYS
+from const import BUTTON_OPEN_IMG, BUTTON_SAVE_IMG, BUTTON_SAVE_CONFIG, BUTTON_CAPTURE_IMG, BUTTON_LOAD_CONFIG, SOURCE_IMG_PATH, OUTPUT_IMG_CV2, MASK_IMG_CV2, SLIDER_LABELS, CSV_CONFIG_KEYS
 from video_player import VideoPlayer
 
 class GUIUtils:
     # static variable
     @staticmethod
     def setupImageLayout(image_layout, label_dict):
-        image_layout.addWidget(label_dict.image_label, 0, 0, 2, 1)
-        image_layout.addWidget(label_dict.text_label, 2, 0)
-        image_layout.addWidget(label_dict.mask_label, 3, 0)
-
-        image_layout.addWidget(label_dict.mask_enhanced_label, 3, 1)
-        image_layout.addWidget(label_dict.output_image_label, 4, 0)
+        image_layout.addWidget(label_dict.image_label, 0, 0, 3, 1)
+        image_layout.addWidget(label_dict.text_label, 3, 0)
+        image_layout.addWidget(label_dict.mask_label, 4, 0)
+        image_layout.addWidget(label_dict.mask_enhanced_label, 4, 1)
+        image_layout.addWidget(label_dict.output_image_label, 5, 0, 3, 1)
         # image_layout.addWidget(label_dict.output_image_label, 3, 0, 1, 2, Qt.AlignCenter)
 
 
@@ -49,8 +48,8 @@ class GUIUtils:
                 lower = np.array([0,0,0], dtype="uint8")
                 upper = np.array([255,255,255], dtype="uint8")
             else:
-                lower = np.array([sliders[0].sliderValue(), sliders[1].sliderValue(), sliders[2].sliderValue()], dtype="uint8")
-                upper = np.array([sliders[3].sliderValue(), sliders[4].sliderValue(), sliders[5].sliderValue()], dtype="uint8")
+                lower = np.array([sliders[0].getSliderValue(), sliders[1].getSliderValue(), sliders[2].getSliderValue()], dtype="uint8")
+                upper = np.array([sliders[3].getSliderValue(), sliders[4].getSliderValue(), sliders[5].getSliderValue()], dtype="uint8")
 
             cv_hsv_mask = cv2.inRange(images_dict.source_img_cv2, lower, upper)
             qt_hsv_mask = Utils.convert_cv_qt(cv_hsv_mask)
@@ -76,29 +75,33 @@ class GUIUtils:
     def setupButtons(parent, buttons_dict, images_dict, label_dict, sliders, target_layout):
         button = QPushButton('Upload Image', parent)
         button.setToolTip('Select image path to process.')
-        button.move(100,70)
         button.clicked.connect(lambda: GUIUtils.openImageDialog(parent, images_dict, label_dict))
         buttons_dict[BUTTON_OPEN_IMG] = button
         target_layout.addWidget(button, 0, 1)
 
+        button_load_config = QPushButton('Upload Config', parent)
+        button_load_config.setToolTip('Select config path to process.')
+        button_load_config.clicked.connect(lambda: GUIUtils.read_HSV_config_csv(parent, sliders, images_dict, label_dict))
+        buttons_dict[BUTTON_LOAD_CONFIG] = button_load_config
+        target_layout.addWidget(button_load_config, 1, 1)
+
         button_video = QPushButton('Capture from Video', parent)
         button_video.setToolTip('Select an image frame from a video.')
-        button_video.move(100,70)
         button_video.clicked.connect(lambda: GUIUtils.openVideoPlayer(parent, images_dict, label_dict))
         buttons_dict[BUTTON_CAPTURE_IMG] = button_video
-        target_layout.addWidget(button_video, 1, 1)
+        target_layout.addWidget(button_video, 2, 1)
 
         button_save = QPushButton('Save Image', parent)
         button_save.setToolTip('Select file path to save into.')
         button_save.clicked.connect(lambda: GUIUtils.saveImageDialog(parent, images_dict[MASK_IMG_CV2]))
         buttons_dict[BUTTON_SAVE_IMG] = button_save
-        target_layout.addWidget(button_save, 4, 1)
+        target_layout.addWidget(button_save, 5, 1)
 
         button_save_config = QPushButton('Save Mask Config', parent)
         button_save_config.setToolTip('Select file path to save the sliders config into.')
         button_save_config.clicked.connect(lambda: GUIUtils.save_HSV_config_csv(sliders, images_dict))
         buttons_dict[BUTTON_SAVE_CONFIG] = button_save_config
-        target_layout.addWidget(button_save_config, 5, 1)
+        target_layout.addWidget(button_save_config, 6, 1)
 
 
     @staticmethod
@@ -145,33 +148,32 @@ class GUIUtils:
         if dialog.exec_() == QDialog.Accepted:
             print(dialog.selectedFiles())
             fileName = dialog.selectedFiles()[0]
-            with open(fileName, 'w') as f:
+            with open(fileName, 'w', newline='') as f:
                 writer = csv.writer(f, delimiter=',')
                 writer.writerow(CSV_CONFIG_KEYS)
                 writer.writerow([SOURCE_IMG_PATH, images_dict[SOURCE_IMG_PATH]])
                 for i in range(len(sliders)):
-                    writer.writerow([SLIDER_LABELS[i], sliders[i].sliderValue()])
+                    writer.writerow([SLIDER_LABELS[i], sliders[i].getSliderValue()])
         else:
             print('Cancelled')
 
     @staticmethod
-    def read_HSV_config_csv(sliders, images_dict, label_dict):
-        dialog = QFileDialog()
-        dialog.setFilter(dialog.filter() | QDir.Hidden)
-        dialog.setDefaultSuffix("csv")
-        dialog.setAcceptMode(QFileDialog.AcceptSave)
-        dialog.setNameFilters(["csv(*.csv)"])
-        if dialog.exec_() == QDialog.Accepted:
-            print(dialog.selectedFiles())
-            fileName = dialog.selectedFiles()[0]
-            with open(fileName, 'w') as f:
-                writer = csv.writer(f, delimiter=',')
-                writer.writerow(CSV_CONFIG_KEYS)
-                writer.writerow([SOURCE_IMG_PATH, images_dict[SOURCE_IMG_PATH]])
-                for i in range(len(sliders)):
-                    writer.writerow([SLIDER_LABELS[i], sliders[i].sliderValue()])
-        else:
-            print('Cancelled')
+    def read_HSV_config_csv(parent, sliders, images_dict, label_dict):
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        fileName, _ = QFileDialog.getOpenFileName(parent,"QFileDialog.getOpenFileName()", "","csv(*.csv)", options=options)
+        print(fileName)
+        with open(fileName, 'r', newline='') as f:
+            reader = csv.DictReader(f)
+            config_dict = {}
+            for row in reader:
+                config_dict[row[CSV_CONFIG_KEYS[0]]] = row[CSV_CONFIG_KEYS[1]]
+
+            images_dict[SOURCE_IMG_PATH] = config_dict[SOURCE_IMG_PATH]
+            for i,label in enumerate(SLIDER_LABELS):
+                sliders[i].setSliderValue(int(config_dict[label]))
+            GUIUtils.refreshImage(images_dict, label_dict)
+
     @staticmethod
     def openVideoPlayer(parent, images_dict, label_dict):
          # Setup Video Player"

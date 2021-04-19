@@ -35,6 +35,9 @@ class Sliders(QWidget):
     def getComponent(self):
         return self.groupBox
 
-    def sliderValue(self):
+    def getSliderValue(self):
         return self.sl.value();
+
+    def setSliderValue(self, val):
+        self.sl.setValue(val)
 
