@@ -2,17 +2,17 @@
 from sliders import Sliders
 import numpy as np
 import cv2
+import csv
 from PyQt5.QtWidgets import (QLabel, QFileDialog, QPushButton, QDialog)
 from PyQt5.QtCore import Qt, QDir
 
 # custom imports:
 from utils import Utils
-from const import BUTTON_OPEN_IMG, BUTTON_SAVE_IMG, BUTTON_CAPTURE_IMG, SOURCE_IMG_PATH, OUTPUT_IMG_CV2, MASK_IMG_CV2
+from const import BUTTON_OPEN_IMG, BUTTON_SAVE_IMG, BUTTON_SAVE_CONFIG, BUTTON_CAPTURE_IMG, SOURCE_IMG_PATH, OUTPUT_IMG_CV2, MASK_IMG_CV2, SLIDER_LABELS, CSV_CONFIG_KEYS
 from video_player import VideoPlayer
 
 class GUIUtils:
     # static variable
-
     @staticmethod
     def setupImageLayout(image_layout, label_dict):
         image_layout.addWidget(label_dict.image_label, 0, 0, 2, 1)
@@ -26,9 +26,8 @@ class GUIUtils:
 
     @staticmethod
     def createHSVSliders(grid, sliders, images_dict, label_dict, parent):
-        labels = ["R/H Lower", "G/S Lower", "B/V Lower", "R/H Upper", "G/S Upper", "B/V Upper"]
         for i in range(6):
-            slider = Sliders(labels[i], 1 if i<3 else 255, parent) # IMPORTANT: PASS SELF AS PARENT!
+            slider = Sliders(SLIDER_LABELS[i], 1 if i<3 else 255, parent) # IMPORTANT: PASS SELF AS PARENT!
             slider.sl.valueChanged[int].connect(lambda: GUIUtils.updateHSVMasking(images_dict, label_dict, sliders))
             sliders.append(slider)
             grid.addWidget(slider.getComponent(), i % 3, 0 if i < 3 else 1)
@@ -74,7 +73,7 @@ class GUIUtils:
 
 
     @staticmethod
-    def setupButtons(parent, buttons_dict, images_dict, label_dict, target_layout):
+    def setupButtons(parent, buttons_dict, images_dict, label_dict, sliders, target_layout):
         button = QPushButton('Upload Image', parent)
         button.setToolTip('Select image path to process.')
         button.move(100,70)
@@ -86,15 +85,26 @@ class GUIUtils:
         button_video.setToolTip('Select an image frame from a video.')
         button_video.move(100,70)
         button_video.clicked.connect(lambda: GUIUtils.openVideoPlayer(parent, images_dict, label_dict))
-        buttons_dict[BUTTON_CAPTURE_IMG] = button
+        buttons_dict[BUTTON_CAPTURE_IMG] = button_video
         target_layout.addWidget(button_video, 1, 1)
 
         button_save = QPushButton('Save Image', parent)
         button_save.setToolTip('Select file path to save into.')
         button_save.clicked.connect(lambda: GUIUtils.saveImageDialog(parent, images_dict[MASK_IMG_CV2]))
-        buttons_dict[BUTTON_SAVE_IMG] = button
+        buttons_dict[BUTTON_SAVE_IMG] = button_save
         target_layout.addWidget(button_save, 4, 1)
 
+        button_save_config = QPushButton('Save Mask Config', parent)
+        button_save_config.setToolTip('Select file path to save the sliders config into.')
+        button_save_config.clicked.connect(lambda: GUIUtils.save_HSV_config_csv(sliders, images_dict))
+        buttons_dict[BUTTON_SAVE_CONFIG] = button_save_config
+        target_layout.addWidget(button_save_config, 5, 1)
+
+
+    @staticmethod
+    def refreshImage(images_dict, label_dict):
+        GUIUtils.setupSourceImage(images_dict, label_dict)
+        GUIUtils.updateHSVMasking(images_dict, label_dict)
 
     @staticmethod
     def openImageDialog(parent, images_dict, label_dict):
@@ -103,8 +113,7 @@ class GUIUtils:
         fileName, _ = QFileDialog.getOpenFileName(parent,"QFileDialog.getOpenFileName()", "","All Files (*);;Python Files (*.py)", options=options)
         print(fileName)
         images_dict[SOURCE_IMG_PATH] = fileName
-        GUIUtils.setupSourceImage(images_dict, label_dict)
-        GUIUtils.updateHSVMasking(images_dict, label_dict)
+        GUIUtils.refreshImage(images_dict, label_dict)
 
     @staticmethod
     def saveImageDialog(parent, image, cv=True):
@@ -120,12 +129,49 @@ class GUIUtils:
                 cv2.imwrite(fileName, image)
             else:
                 image.save(fileName)
+            parent.images_dict[SOURCE_IMG_PATH] = fileName
         else:
             print('Cancelled')
         # fileName, _ = QFileDialog.getSaveFileName(parent, "Save Image", "", filter, options=options)
         # print(fileName)
 
+    @staticmethod
+    def save_HSV_config_csv(sliders, images_dict):
+        dialog = QFileDialog()
+        dialog.setFilter(dialog.filter() | QDir.Hidden)
+        dialog.setDefaultSuffix("csv")
+        dialog.setAcceptMode(QFileDialog.AcceptSave)
+        dialog.setNameFilters(["csv(*.csv)"])
+        if dialog.exec_() == QDialog.Accepted:
+            print(dialog.selectedFiles())
+            fileName = dialog.selectedFiles()[0]
+            with open(fileName, 'w') as f:
+                writer = csv.writer(f, delimiter=',')
+                writer.writerow(CSV_CONFIG_KEYS)
+                writer.writerow([SOURCE_IMG_PATH, images_dict[SOURCE_IMG_PATH]])
+                for i in range(len(sliders)):
+                    writer.writerow([SLIDER_LABELS[i], sliders[i].sliderValue()])
+        else:
+            print('Cancelled')
 
+    @staticmethod
+    def read_HSV_config_csv(sliders, images_dict, label_dict):
+        dialog = QFileDialog()
+        dialog.setFilter(dialog.filter() | QDir.Hidden)
+        dialog.setDefaultSuffix("csv")
+        dialog.setAcceptMode(QFileDialog.AcceptSave)
+        dialog.setNameFilters(["csv(*.csv)"])
+        if dialog.exec_() == QDialog.Accepted:
+            print(dialog.selectedFiles())
+            fileName = dialog.selectedFiles()[0]
+            with open(fileName, 'w') as f:
+                writer = csv.writer(f, delimiter=',')
+                writer.writerow(CSV_CONFIG_KEYS)
+                writer.writerow([SOURCE_IMG_PATH, images_dict[SOURCE_IMG_PATH]])
+                for i in range(len(sliders)):
+                    writer.writerow([SLIDER_LABELS[i], sliders[i].sliderValue()])
+        else:
+            print('Cancelled')
     @staticmethod
     def openVideoPlayer(parent, images_dict, label_dict):
          # Setup Video Player"

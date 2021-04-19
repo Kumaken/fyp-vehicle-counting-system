@@ -74,6 +74,12 @@ class VideoPlayer(QWidget):
         self.mediaPlayer.error.connect(self.handleError)
         self.statusBar.showMessage("Ready")
 
+    # inherited callback when the window closes!
+    def closeEvent(self, event):
+        from gui_utils import GUIUtils
+        print("Close event of video player is called!")
+        GUIUtils.refreshImage(self.main_window.images_dict, self.main_window.label_dict)
+
     def abrir(self):
         fileName, _ = QFileDialog.getOpenFileName(self, "Selecciona los mediose",
                 ".", "Video Files (*.mp4 *.flv *.ts *.mts *.avi)")

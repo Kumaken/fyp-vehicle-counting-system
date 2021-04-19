@@ -54,7 +54,7 @@ class DisplayImageWidget(QtWidgets.QWidget):
         # create a vertical box layout and add the two labels
         self.main_layout = QVBoxLayout()
         GUIUtils.setupImageLayout(self.layout_dict.image_layout, self.label_dict)
-        GUIUtils.setupButtons(self, self.buttons_dict, self.images_dict, self.label_dict, self.layout_dict.image_layout)
+        GUIUtils.setupButtons(self, self.buttons_dict, self.images_dict, self.label_dict, self.sliders, self.layout_dict.image_layout)
         self.main_layout.addLayout(self.layout_dict.image_layout)
         # set the vbox layout as the widgets layout
         self.setLayout(self.main_layout)
