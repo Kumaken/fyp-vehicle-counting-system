@@ -12,6 +12,7 @@ class VideoPlayer(QWidget):
 
     def __init__(self, main_window, parent=None):
         super().__init__(parent)
+        self.saving = False
         self.main_window = main_window
         self.setWindowModality(Qt.ApplicationModal)
 
@@ -114,17 +115,26 @@ class VideoPlayer(QWidget):
 
     def screenshotCall(self):
         #Call video frame grabber
+        print("screenshotCall!")
         self.grabber = VideoFrameGrabber(self.videoWidget, self)
         self.mediaPlayer.setVideoOutput(self.grabber)
         self.grabber.frameAvailable.connect(self.process_frame)
         self.statusBar.showMessage("Taking a screenshot of current frame...")
+        # self.mediaPlayer.setVideoOutput(self.grabber)
         self.mediaPlayer.pause()
 
     def process_frame(self, image):
         from gui_utils import GUIUtils
         # Save image here
-        GUIUtils.saveImageDialog(self.main_window, image, cv=False)
-        self.statusBar.showMessage("Screenshot successfully saved!")
+        print("process_frame called!")
+        if not self.saving: # prevent multiple signals after first saving
+            self.saving = True
+            self.mediaPlayer.setVideoOutput(self.videoWidget)
+            self.mediaPlayer.pause()
+            GUIUtils.saveImageDialog(self.main_window, image, cv=False)
+            self.statusBar.showMessage("Screenshot successfully saved!")
+            self.saving = False
+
 
 # if __name__ == '__main__':
 #     import sys

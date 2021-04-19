@@ -19,6 +19,7 @@ class VideoFrameGrabber(QAbstractVideoSurface):
         super().__init__(parent)
 
         self.widget = widget
+
     def supportedPixelFormats(self, handleType):
         return [QVideoFrame.Format_ARGB32, QVideoFrame.Format_ARGB32_Premultiplied,
                 QVideoFrame.Format_RGB32, QVideoFrame.Format_RGB24, QVideoFrame.Format_RGB565,
@@ -72,6 +73,8 @@ class VideoFrameGrabber(QAbstractVideoSurface):
             cloneFrame.map(QAbstractVideoBuffer.ReadOnly)
             image = QImage(cloneFrame.bits(), cloneFrame.width(), cloneFrame.height(),
                            QVideoFrame.imageFormatFromPixelFormat(cloneFrame.pixelFormat()))
+
+            print('Emit signal frameAvailable')
             self.frameAvailable.emit(image)  # this is very important
             cloneFrame.unmap()
 
