@@ -6,6 +6,7 @@ https://pjreddie.com/darknet/yolo/
 # pylint: disable=no-member,invalid-name
 
 import cv2
+print ("cv2 version", cv2.__version__)
 import numpy as np
 import settings
 
@@ -17,6 +18,8 @@ with open(settings.YOLO_CLASSES_OF_INTEREST_PATH, 'r') as coi_file:
 conf_threshold = settings.YOLO_CONFIDENCE_THRESHOLD
 net = cv2.dnn.readNet(settings.YOLO_WEIGHTS_PATH, settings.YOLO_CONFIG_PATH)
 
+# net = cv2.dnn.readNet(settings.YOLO_WEIGHTS_PATH)
+
 def get_bounding_boxes(image):
     '''
     Return a list of bounding boxes of objects detected,
@@ -25,13 +28,17 @@ def get_bounding_boxes(image):
 
     # create image blob
     scale = 0.00392
-    image_blob = cv2.dnn.blobFromImage(image, scale, (416, 416), (0, 0, 0), True, crop=False)
+    imgsz = 640 # 416 # 640
+    image_blob = cv2.dnn.blobFromImage(image, scale, (imgsz, imgsz), (0, 0, 0), True, crop=False)
 
     # detect objects
     net.setInput(image_blob)
     layer_names = net.getLayerNames()
     output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
+    print("output_layers", output_layers)
     outputs = net.forward(output_layers)
+    print("outputs")
+    print(outputs)
 
     classes = []
     confidences = []
@@ -41,6 +48,10 @@ def get_bounding_boxes(image):
     for output in outputs:
         for detection in output:
             scores = detection[5:]
+
+            if(len(scores) == 0):
+                continue
+            # print(scores)
             class_id = np.argmax(scores)
             confidence = scores[class_id]
             if confidence > conf_threshold and CLASSES[class_id] in CLASSES_OF_INTEREST:
