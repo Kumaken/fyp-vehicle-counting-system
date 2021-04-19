@@ -105,9 +105,9 @@ class GUIUtils:
 
 
     @staticmethod
-    def refreshImage(images_dict, label_dict):
+    def refreshImage(images_dict, label_dict, sliders=None):
         GUIUtils.setupSourceImage(images_dict, label_dict)
-        GUIUtils.updateHSVMasking(images_dict, label_dict)
+        GUIUtils.updateHSVMasking(images_dict, label_dict, sliders=sliders)
 
     @staticmethod
     def openImageDialog(parent, images_dict, label_dict):
@@ -172,7 +172,7 @@ class GUIUtils:
             images_dict[SOURCE_IMG_PATH] = config_dict[SOURCE_IMG_PATH]
             for i,label in enumerate(SLIDER_LABELS):
                 sliders[i].setSliderValue(int(config_dict[label]))
-            GUIUtils.refreshImage(images_dict, label_dict)
+            GUIUtils.refreshImage(images_dict, label_dict, sliders=sliders)
 
     @staticmethod
     def openVideoPlayer(parent, images_dict, label_dict):
