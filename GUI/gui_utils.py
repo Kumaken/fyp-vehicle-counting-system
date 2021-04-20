@@ -1,15 +1,17 @@
-# import custom modules:
-from sliders import Sliders
+
+# import module
+import traceback
 import numpy as np
 import cv2
 import csv
 from PyQt5.QtWidgets import (QLabel, QFileDialog, QPushButton, QDialog)
 from PyQt5.QtCore import Qt, QDir
 
-# custom imports:
-from utils import Utils
-from const import BUTTON_OPEN_IMG, BUTTON_SAVE_IMG, BUTTON_SAVE_CONFIG, BUTTON_CAPTURE_IMG, BUTTON_LOAD_CONFIG, SOURCE_IMG_PATH, OUTPUT_IMG_CV2, MASK_IMG_CV2, SLIDER_LABELS, CSV_CONFIG_KEYS
-from video_player import VideoPlayer
+# import custom modules:
+from GUI.sliders import Sliders
+from GUI.utils import Utils
+from GUI.const import BUTTON_OPEN_IMG, BUTTON_SAVE_IMG, BUTTON_SAVE_CONFIG, BUTTON_CAPTURE_IMG, BUTTON_LOAD_CONFIG, BUTTON_START_DETECTION, SOURCE_IMG_PATH, OUTPUT_IMG_CV2, MASK_IMG_CV2, SLIDER_LABELS, CSV_CONFIG_KEYS
+from GUI.video_player import VideoPlayer
 
 class GUIUtils:
     # static variable
@@ -103,6 +105,13 @@ class GUIUtils:
         buttons_dict[BUTTON_SAVE_CONFIG] = button_save_config
         target_layout.addWidget(button_save_config, 6, 1)
 
+        from main import run
+        button_start_detection = QPushButton('Start Detection', parent)
+        button_start_detection.setToolTip('Proceed to Vehicle Counting module.')
+        button_start_detection.clicked.connect(lambda: run(images_dict))
+        buttons_dict[BUTTON_START_DETECTION] = button_start_detection
+        target_layout.addWidget(button_start_detection, 7, 1)
+
 
     @staticmethod
     def refreshImage(images_dict, label_dict, sliders=None):
@@ -163,16 +172,20 @@ class GUIUtils:
         options |= QFileDialog.DontUseNativeDialog
         fileName, _ = QFileDialog.getOpenFileName(parent,"QFileDialog.getOpenFileName()", "","csv(*.csv)", options=options)
         print(fileName)
-        with open(fileName, 'r', newline='') as f:
-            reader = csv.DictReader(f)
-            config_dict = {}
-            for row in reader:
-                config_dict[row[CSV_CONFIG_KEYS[0]]] = row[CSV_CONFIG_KEYS[1]]
+        try:
+            with open(fileName, 'r', newline='') as f:
+                reader = csv.DictReader(f)
+                config_dict = {}
+                for row in reader:
+                    config_dict[row[CSV_CONFIG_KEYS[0]]] = row[CSV_CONFIG_KEYS[1]]
 
-            images_dict[SOURCE_IMG_PATH] = config_dict[SOURCE_IMG_PATH]
-            for i,label in enumerate(SLIDER_LABELS):
-                sliders[i].setSliderValue(int(config_dict[label]))
-            GUIUtils.refreshImage(images_dict, label_dict, sliders=sliders)
+                images_dict[SOURCE_IMG_PATH] = config_dict[SOURCE_IMG_PATH]
+                for i,label in enumerate(SLIDER_LABELS):
+                    sliders[i].setSliderValue(int(config_dict[label]))
+                GUIUtils.refreshImage(images_dict, label_dict, sliders=sliders)
+        except:
+            print("Read config failed!")
+            traceback.print_exc()
 
     @staticmethod
     def openVideoPlayer(parent, images_dict, label_dict):

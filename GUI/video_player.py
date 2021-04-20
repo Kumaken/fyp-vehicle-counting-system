@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import (QApplication, QFileDialog, QHBoxLayout, QLabel,
         QPushButton, QSizePolicy, QSlider, QStyle, QVBoxLayout, QWidget, QStatusBar)
 
 # custom imports:
-from video_frame_grabber import VideoFrameGrabber
+from GUI.video_frame_grabber import VideoFrameGrabber
 
 class VideoPlayer(QWidget):
 
@@ -76,7 +76,7 @@ class VideoPlayer(QWidget):
 
     # inherited callback when the window closes!
     def closeEvent(self, event):
-        from gui_utils import GUIUtils
+        from GUI.gui_utils import GUIUtils
         print("Close event of video player is called!")
         GUIUtils.refreshImage(self.main_window.images_dict, self.main_window.label_dict)
 
@@ -130,7 +130,7 @@ class VideoPlayer(QWidget):
         self.mediaPlayer.pause()
 
     def process_frame(self, image):
-        from gui_utils import GUIUtils
+        from GUI.gui_utils import GUIUtils
         # Save image here
         print("process_frame called!")
         if not self.saving: # prevent multiple signals after first saving

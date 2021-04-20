@@ -1,15 +1,17 @@
 import numpy as np
 import cv2
-import csv
 from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
-from config import Config
+from GUI.config import Config
+
+
+
 
 class Utils:
     @staticmethod
     def enhanceMask(mask):
         des = mask
-        contour,hier = cv2.findContours(des,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
+        contour, _ = cv2.findContours(des,cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE)
 
         for cnt in contour:
             cv2.drawContours(des,[cnt],-1,(255,255,255),thickness=cv2.FILLED)

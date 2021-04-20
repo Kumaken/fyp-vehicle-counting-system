@@ -18,11 +18,12 @@ from util.logger import get_logger
 from util.debugger import mouse_callback
 from ObjectCounter import ObjectCounter
 
+from GUI.const import MASK_IMG_CV2
 init_logger()
 logger = get_logger()
 
 
-def run():
+def run(images_dict):
     '''
     Initialize object counter class and run counting loop.
     '''
@@ -43,9 +44,12 @@ def run():
     tracker = settings.TRACKER
     use_droi = settings.USE_DROI
     # create detection region of interest polygon
-    droi = settings.DROI \
-            if use_droi \
-            else [(0, 0), (f_width, 0), (f_width, f_height), (0, f_height)]
+    # CHANGE
+    # droi = settings.DROI \
+    #         if use_droi \
+    #         else [(0, 0), (f_width, 0), (f_width, f_height), (0, f_height)]
+    droi = images_dict[MASK_IMG_CV2]
+
     show_droi = settings.SHOW_DROI
     counting_lines = settings.COUNTING_LINES
     show_counts = settings.SHOW_COUNTS
@@ -91,7 +95,7 @@ def run():
 
     try:
         # main loop
-        while retval:
+        while cv2.getWindowProperty('Debug', 0) >= 0 and retval:
             k = cv2.waitKey(1) & 0xFF
             if k == ord('p'): # pause/play loop if 'p' key is pressed
                 is_paused = False if is_paused else True
@@ -147,6 +151,6 @@ def run():
             },
         })
 
-
+from GUI.main_gui import start_GUI
 if __name__ == '__main__':
-    run()
+    start_GUI()

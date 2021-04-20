@@ -8,11 +8,11 @@ import numpy as np
 import sys
 
 # import custom modules:
-from sliders import Sliders
-from gui_utils import GUIUtils
-from custom_dict import CustomDict
-from const import BUTTON_OPEN_IMG, BUTTON_SAVE_IMG, BUTTON_CAPTURE_IMG, SOURCE_IMG_PATH,IMAGE_DICT_KEYS
-from video_player import VideoPlayer
+from GUI.sliders import Sliders
+from GUI.gui_utils import GUIUtils
+from GUI.custom_dict import CustomDict
+from GUI.const import BUTTON_OPEN_IMG, BUTTON_SAVE_IMG, BUTTON_CAPTURE_IMG, SOURCE_IMG_PATH,IMAGE_DICT_KEYS
+from GUI.video_player import VideoPlayer
 
 class DisplayImageWidget(QtWidgets.QWidget):
 
@@ -75,8 +75,9 @@ class DisplayImageWidget(QtWidgets.QWidget):
         GUIUtils.updateHSVMasking(self.images_dict, self.label_dict, self.sliders)
 
 
-if __name__ == '__main__':
+def start_GUI():
     app = QtWidgets.QApplication(sys.argv)
     display_image_widget = DisplayImageWidget()
     display_image_widget.show()
+    app.exec_()
     sys.exit(app.exec_())

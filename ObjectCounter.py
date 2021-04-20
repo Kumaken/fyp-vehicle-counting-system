@@ -14,6 +14,7 @@ from util.detection_roi import get_roi_frame, draw_roi
 from util.logger import get_logger
 from counter import attempt_count
 
+from GUI.utils import Utils
 logger = get_logger()
 NUM_CORES = multiprocessing.cpu_count()
 
@@ -37,7 +38,9 @@ class ObjectCounter():
         self.hud_color = hud_color
 
         # create blobs from initial frame
-        droi_frame = get_roi_frame(self.frame, self.droi)
+        # CHANGE:
+        # droi_frame = get_roi_frame(self.frame, self.droi)
+        droi_frame = Utils.maskImage(self.frame, self.droi)
         _bounding_boxes, _classes, _confidences = get_bounding_boxes(droi_frame, self.detector)
         self.blobs = add_new_blobs(_bounding_boxes, _classes, _confidences, self.blobs, self.frame, self.tracker, self.mcdf)
 
@@ -68,7 +71,9 @@ class ObjectCounter():
 
         if self.frame_count >= self.detection_interval:
             # rerun detection
-            droi_frame = get_roi_frame(self.frame, self.droi)
+            # CHANGE
+            # droi_frame = get_roi_frame(self.frame, self.droi)
+            droi_frame = Utils.maskImage(self.frame, self.droi)
             _bounding_boxes, _classes, _confidences = get_bounding_boxes(droi_frame, self.detector)
 
             self.blobs = add_new_blobs(_bounding_boxes, _classes, _confidences, self.blobs, self.frame, self.tracker, self.mcdf)
@@ -98,8 +103,9 @@ class ObjectCounter():
             cv2.putText(frame, counting_line['label'], cl_label_origin, font, 1, self.hud_color, 2, line_type)
 
         # show detection roi
-        if self.show_droi:
-            frame = draw_roi(frame, self.droi)
+        # CHANGE
+        # if self.show_droi:
+        #     frame = draw_roi(frame, self.droi)
 
         # show counts
         if self.show_counts:
