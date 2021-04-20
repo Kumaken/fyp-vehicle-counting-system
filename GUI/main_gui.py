@@ -49,15 +49,13 @@ class DisplayImageWidget(QtWidgets.QWidget):
 
 
     def setup_GUI(self):
-        self.setWindowTitle("Qt static label demo")
+        self.setWindowTitle("HSV Based RoI Segmentations")
 
         # create a vertical box layout and add the two labels
         self.main_layout = QVBoxLayout()
         GUIUtils.setupImageLayout(self.layout_dict.image_layout, self.label_dict)
         GUIUtils.setupButtons(self, self.buttons_dict, self.images_dict, self.label_dict, self.sliders, self.layout_dict.image_layout)
         self.main_layout.addLayout(self.layout_dict.image_layout)
-        # set the vbox layout as the widgets layout
-        self.setLayout(self.main_layout)
 
         # load the test image - we really should have checked that this worked!
         # self.images_dict.source_img_cv2 = cv2.imread(self.images_dict.SOURCE_IMG_PATH)

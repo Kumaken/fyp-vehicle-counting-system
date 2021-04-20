@@ -11,6 +11,8 @@ import cv2
 from dotenv import load_dotenv
 load_dotenv()
 
+from PyQt5 import QtWidgets
+
 import settings
 from util.logger import init_logger
 from util.image import take_screenshot
@@ -19,15 +21,22 @@ from util.debugger import mouse_callback
 from ObjectCounter import ObjectCounter
 
 from GUI.const import MASK_IMG_CV2
+from GUI.detector_gui import DetectorGUI
 init_logger()
 logger = get_logger()
 
+# global variables:
+is_paused = False
+
+def play_or_pause():
+    global is_paused
+    is_paused = False if is_paused else True
+    logger.info('Loop paused/played.', extra={'meta': {'label': 'PAUSE_PLAY_LOOP', 'is_paused': is_paused}})
 
 def run(images_dict):
     '''
     Initialize object counter class and run counting loop.
     '''
-
     video = settings.VIDEO
     cap = cv2.VideoCapture(video)
     if not cap.isOpened():
@@ -88,18 +97,25 @@ def run(images_dict):
         cv2.namedWindow('Debug')
         cv2.setMouseCallback('Debug', mouse_callback, {'frame_width': f_width, 'frame_height': f_height})
 
-    is_paused = False
+    # is_paused = False
     output_frame = None
     frames_count = round(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     frames_processed = 0
+
+    # initialize control gui:
+    app = QtWidgets.QApplication(sys.argv)
+    control_widget = DetectorGUI()
+    control_widget.show()
+    app.exec_()
 
     try:
         # main loop
         while cv2.getWindowProperty('Debug', 0) >= 0 and retval:
             k = cv2.waitKey(1) & 0xFF
             if k == ord('p'): # pause/play loop if 'p' key is pressed
-                is_paused = False if is_paused else True
-                logger.info('Loop paused/played.', extra={'meta': {'label': 'PAUSE_PLAY_LOOP', 'is_paused': is_paused}})
+                play_or_pause()
+                # is_paused = False if is_paused else True
+                # logger.info('Loop paused/played.', extra={'meta': {'label': 'PAUSE_PLAY_LOOP', 'is_paused': is_paused}})
             if k == ord('s') and output_frame is not None: # save frame if 's' key is pressed
                 take_screenshot(output_frame)
             if k == ord('q'): # end video loop if 'q' key is pressed
