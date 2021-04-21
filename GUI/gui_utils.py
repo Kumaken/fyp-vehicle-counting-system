@@ -10,19 +10,65 @@ from PyQt5.QtCore import Qt, QDir
 # import custom modules:
 from GUI.sliders import Sliders
 from GUI.utils import Utils
-from GUI.const import BUTTON_OPEN_IMG, BUTTON_SAVE_IMG, BUTTON_SAVE_CONFIG, BUTTON_CAPTURE_IMG, BUTTON_LOAD_CONFIG, BUTTON_START_DETECTION, SOURCE_IMG_PATH, OUTPUT_IMG_CV2, MASK_IMG_CV2, SLIDER_LABELS, CSV_CONFIG_KEYS
+from GUI.const import BUTTON_OPEN_IMG, BUTTON_SAVE_IMG, BUTTON_SAVE_CONFIG, BUTTON_CAPTURE_IMG, BUTTON_LOAD_CONFIG, BUTTON_START_DETECTION, SOURCE_IMG_PATH, OUTPUT_IMG_CV2, OUTPUT_IMG_QT, MASK_IMG_CV2, SLIDER_LABELS, CSV_CONFIG_KEYS
 from GUI.video_player import VideoPlayer
 
 class GUIUtils:
     # static variable
+    drawing_line_mode = False
+    line = []
+
     @staticmethod
-    def setupImageLayout(image_layout, label_dict):
+    def getClickPositionOnImage(event, label_dict, images_dict, parent):
+        print(event.pos().x(), event.pos().y())
+        # return event.pos().x(), event.pos().y()
+        GUIUtils.saveCoords(event.pos().x(), event.pos().y())
+        if GUIUtils.drawing_line_mode:
+            print("APPLYING LINES")
+            GUIUtils.saveLine(parent)
+            result_cv2_img = GUIUtils.drawLines(parent, images_dict)
+            GUIUtils.applyLines(label_dict, result_cv2_img)
+            GUIUtils.drawing_line_mode = False
+        else:
+            GUIUtils.drawing_line_mode = True
+
+
+
+    @staticmethod
+    def saveCoords(x, y):
+        GUIUtils.line.append((x,y))
+
+    @staticmethod
+    def saveLine(parent):
+        parent.lines.append(GUIUtils.line)
+        GUIUtils.line = []
+
+    @staticmethod
+    def drawLines(parent, images_dict):
+        from GUI.config import Config
+        image = images_dict[OUTPUT_IMG_CV2]
+        og_width, og_height  = image.shape[1::-1] # get size of an image
+        print("OG:", og_width, og_height)
+        ratio_h, ratio_w = og_height/Config.display_height, og_width/Config.display_width
+        for point1, point2 in parent.lines:
+            adjusted_p1 = (int(point1[0]*ratio_w), int(point1[1]*ratio_h))
+            adjusted_p2 = (int(point2[0]*ratio_w), int(point2[1]*ratio_h))
+            print("Drawing line between: ", adjusted_p1, adjusted_p2)
+            cv2.line(image, adjusted_p1, adjusted_p2, [0, 0, 255], 5)
+        return image
+
+    @staticmethod
+    def setupImageLayout(parent, image_layout, label_dict, image_dict):
         image_layout.addWidget(label_dict.image_label, 0, 0, 3, 1)
         image_layout.addWidget(label_dict.text_label, 3, 0)
         image_layout.addWidget(label_dict.mask_label, 4, 0)
         image_layout.addWidget(label_dict.mask_enhanced_label, 4, 1)
+
+        # prepare output label:
+        label_dict.output_image_label.mousePressEvent = lambda event: GUIUtils.getClickPositionOnImage(event, label_dict, image_dict, parent)
         image_layout.addWidget(label_dict.output_image_label, 5, 0, 3, 1)
         # image_layout.addWidget(label_dict.output_image_label, 3, 0, 1, 2, Qt.AlignCenter)
+
 
 
     @staticmethod
@@ -41,6 +87,11 @@ class GUIUtils:
             label_dict.image_label.setPixmap(qt_hsv_mask)
         except Exception as e:
             print('Read image fails:', e)
+
+    @staticmethod
+    def applyLines(label_dict, image_cv):
+        image_qt = Utils.convert_cv_qt(image_cv)
+        label_dict.output_image_label.setPixmap(image_qt)
 
     @staticmethod
     def updateHSVMasking(images_dict, label_dict, sliders = None):
@@ -68,6 +119,7 @@ class GUIUtils:
             images_dict[OUTPUT_IMG_CV2] = masked_img
 
             qt_masked_img = Utils.convert_cv_qt(masked_img)
+            images_dict[OUTPUT_IMG_QT] = qt_masked_img
             label_dict.output_image_label.setPixmap(qt_masked_img)
         except Exception as e:
             print('Update HSV masking fails:', e)
@@ -192,6 +244,5 @@ class GUIUtils:
          # Setup Video Player"
          # have to add video_player as main window's class attributes, else garbage collection will automatically remove it (close immediately)
         parent.video_player = VideoPlayer(main_window=parent)
-        parent.video_player.setWindowTitle("Player")
         parent.video_player.resize(600, 400)
         parent.video_player.show()

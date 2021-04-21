@@ -29,5 +29,5 @@ class Utils:
         h, w, ch = rgb_image.shape
         bytes_per_line = ch * w
         convert_to_Qt_format = QtGui.QImage(rgb_image.data, w, h, bytes_per_line, QtGui.QImage.Format_RGB888)
-        p = convert_to_Qt_format.scaled(Config.disply_width, Config.display_height, Qt.KeepAspectRatio)
+        p = convert_to_Qt_format.scaled(Config.display_width, Config.display_height, Qt.KeepAspectRatio)
         return QtGui.QPixmap.fromImage(p)

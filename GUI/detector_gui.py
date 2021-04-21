@@ -17,8 +17,18 @@ class DetectorGUI(QtWidgets.QWidget):
         self.setLayout(self.main_layout)
 
     def setupButtons(self):
-        from main import play_or_pause
+        from main import play_or_pause, screenshoot, stop
         start_btn = QPushButton('Start/Pause', self.parent)
         start_btn.setToolTip('Play or pause the detection process.')
         start_btn.clicked.connect(play_or_pause)
         self.button_layout.addWidget(start_btn, 0, 0)
+
+        ss_btn = QPushButton('Screenshoot', self.parent)
+        ss_btn.setToolTip('Take a screenshot of current frame.')
+        ss_btn.clicked.connect(screenshoot)
+        self.button_layout.addWidget(ss_btn, 0, 1)
+
+        quit_btn = QPushButton('Exit', self.parent)
+        quit_btn.setToolTip('Close the detection module.')
+        quit_btn.clicked.connect(stop)
+        self.button_layout.addWidget(quit_btn, 0, 2)

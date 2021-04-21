@@ -27,16 +27,33 @@ logger = get_logger()
 
 # global variables:
 is_paused = False
+output_frame = None
+stop_detection = False
 
 def play_or_pause():
     global is_paused
     is_paused = False if is_paused else True
     logger.info('Loop paused/played.', extra={'meta': {'label': 'PAUSE_PLAY_LOOP', 'is_paused': is_paused}})
 
+def screenshoot():
+    global output_frame
+    take_screenshot(output_frame)
+
+def stop():
+    global stop_detection
+    stop_detection = True
+    logger.info('Loop stopped.', extra={'meta': {'label': 'STOP_LOOP'}})
+
 def run(images_dict):
     '''
     Initialize object counter class and run counting loop.
     '''
+    global is_paused, output_frame, stop_detection
+    # reset global state
+    stop_detection = False
+    is_paused = False
+    output_frame = None
+
     video = settings.VIDEO
     cap = cv2.VideoCapture(video)
     if not cap.isOpened():
@@ -98,19 +115,18 @@ def run(images_dict):
         cv2.setMouseCallback('Debug', mouse_callback, {'frame_width': f_width, 'frame_height': f_height})
 
     # is_paused = False
-    output_frame = None
+
     frames_count = round(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     frames_processed = 0
 
     # initialize control gui:
-    app = QtWidgets.QApplication(sys.argv)
-    control_widget = DetectorGUI()
-    control_widget.show()
-    app.exec_()
+    detector_gui = DetectorGUI()
+    detector_gui.show()
 
     try:
         # main loop
-        while cv2.getWindowProperty('Debug', 0) >= 0 and retval:
+        print("IS STOP? ", stop_detection)
+        while not stop_detection and retval:
             k = cv2.waitKey(1) & 0xFF
             if k == ord('p'): # pause/play loop if 'p' key is pressed
                 play_or_pause()
