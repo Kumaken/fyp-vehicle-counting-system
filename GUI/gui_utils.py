@@ -4,6 +4,7 @@ import traceback
 import numpy as np
 import cv2
 import csv
+import pickle # serializing tuples/objects/lists easily
 from PyQt5.QtWidgets import (QLabel, QFileDialog, QPushButton, QDialog)
 from PyQt5.QtCore import Qt, QDir
 
@@ -153,7 +154,7 @@ class GUIUtils:
 
         button_save_config = QPushButton('Save Mask Config', parent)
         button_save_config.setToolTip('Select file path to save the sliders config into.')
-        button_save_config.clicked.connect(lambda: GUIUtils.save_HSV_config_csv(sliders, images_dict))
+        button_save_config.clicked.connect(lambda: GUIUtils.save_HSV_config_csv(sliders, images_dict, parent.lines))
         buttons_dict[BUTTON_SAVE_CONFIG] = button_save_config
         target_layout.addWidget(button_save_config, 6, 1)
 
@@ -200,7 +201,7 @@ class GUIUtils:
         # print(fileName)
 
     @staticmethod
-    def save_HSV_config_csv(sliders, images_dict):
+    def save_HSV_config_csv(sliders, images_dict, lines):
         dialog = QFileDialog()
         dialog.setFilter(dialog.filter() | QDir.Hidden)
         dialog.setDefaultSuffix("csv")
@@ -215,6 +216,8 @@ class GUIUtils:
                 writer.writerow([SOURCE_IMG_PATH, images_dict[SOURCE_IMG_PATH]])
                 for i in range(len(sliders)):
                     writer.writerow([SLIDER_LABELS[i], sliders[i].getSliderValue()])
+            with open(fileName+'.pickle', 'wb') as handle:
+                pickle.dump(lines, handle, protocol=pickle.HIGHEST_PROTOCOL)
         else:
             print('Cancelled')
 
@@ -235,6 +238,9 @@ class GUIUtils:
                 for i,label in enumerate(SLIDER_LABELS):
                     sliders[i].setSliderValue(int(config_dict[label]))
                 GUIUtils.refreshImage(images_dict, label_dict, sliders=sliders)
+            print(fileName)
+            with open(fileName+'.pickle', 'rb') as handle:
+                print(pickle.load(handle))
         except:
             print("Read config failed!")
             traceback.print_exc()
