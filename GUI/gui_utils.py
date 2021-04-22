@@ -23,12 +23,11 @@ class GUIUtils:
     def getClickPositionOnImage(event, label_dict, images_dict, parent):
         print(event.pos().x(), event.pos().y())
         # return event.pos().x(), event.pos().y()
-        GUIUtils.saveCoords(event.pos().x(), event.pos().y())
+        GUIUtils.saveCoords(event.pos().x(), event.pos().y(), images_dict)
         if GUIUtils.drawing_line_mode:
             print("APPLYING LINES")
             GUIUtils.saveLine(parent)
-            result_cv2_img = GUIUtils.drawLines(parent, images_dict)
-            GUIUtils.applyLines(label_dict, result_cv2_img)
+            GUIUtils.refreshLines(parent, label_dict, images_dict)
             GUIUtils.drawing_line_mode = False
         else:
             GUIUtils.drawing_line_mode = True
@@ -36,27 +35,43 @@ class GUIUtils:
 
 
     @staticmethod
-    def saveCoords(x, y):
-        GUIUtils.line.append((x,y))
+    def saveCoords(x, y, images_dict):
+        GUIUtils.line.append(GUIUtils.applyRatio((x,y), images_dict))
 
     @staticmethod
-    def saveLine(parent):
-        parent.lines.append(GUIUtils.line)
+    def saveLine(parent, label = 'Nameless Line'):
+        count = len(parent.lines)
+        line_dict = {
+            'label': label if count == 0 else label + str(count),
+            'line': GUIUtils.line
+        }
+        parent.lines.append(line_dict)
         GUIUtils.line = []
+
+    @staticmethod
+    def applyRatio(og_size, images_dict):
+        return (int(og_size[0] * images_dict["image_ratio"]["width"]), int(og_size[1] * images_dict["image_ratio"]["height"]))
 
     @staticmethod
     def drawLines(parent, images_dict):
         from GUI.config import Config
         image = images_dict[OUTPUT_IMG_CV2]
-        og_width, og_height  = image.shape[1::-1] # get size of an image
-        print("OG:", og_width, og_height)
-        ratio_h, ratio_w = og_height/Config.display_height, og_width/Config.display_width
-        for point1, point2 in parent.lines:
-            adjusted_p1 = (int(point1[0]*ratio_w), int(point1[1]*ratio_h))
-            adjusted_p2 = (int(point2[0]*ratio_w), int(point2[1]*ratio_h))
-            print("Drawing line between: ", adjusted_p1, adjusted_p2)
-            cv2.line(image, adjusted_p1, adjusted_p2, [0, 0, 255], 5)
+        for line_entry in parent.lines:
+            point1, point2 = line_entry['line']
+            print("Drawing line between: ", point1, point2)
+            cv2.line(image, point1, point2, [0, 0, 255], 10)
         return image
+
+    @staticmethod
+    def applyLines(label_dict, image_cv):
+        image_qt = Utils.convert_cv_qt(image_cv)
+        label_dict.output_image_label.setPixmap(image_qt)
+
+    @staticmethod
+    def refreshLines(parent, label_dict, images_dict):
+        parent.line_list_widget.setupList()
+        result_cv2_img = GUIUtils.drawLines(parent, images_dict)
+        GUIUtils.applyLines(label_dict, result_cv2_img)
 
     @staticmethod
     def setupImageLayout(parent, image_layout, label_dict, image_dict):
@@ -84,15 +99,25 @@ class GUIUtils:
     def setupSourceImage(images_dict, label_dict):
         try:
             images_dict.source_img_cv2 = cv2.imread(images_dict.SOURCE_IMG_PATH)
-            qt_hsv_mask = Utils.convert_cv_qt(images_dict.source_img_cv2)
+            qt_hsv_mask = Utils.convert_cv_qt(images_dict.source_img_cv2,)
+            # set qt image size
+            images_dict["qt_image_size"] = {"width": qt_hsv_mask.width(), "height": qt_hsv_mask.height()}
+            print("IMAGES_DICT QT_IMAGE_SIZE", images_dict["qt_image_size"])
+            # set qt image ratio for conversion back to cv2 size
+            og_width, og_height  = images_dict.source_img_cv2.shape[1::-1]
+            ratio_h, ratio_w = og_height/images_dict["qt_image_size"]["height"], og_width/images_dict["qt_image_size"]["width"]
+            print("OG:", og_width, og_height)
+            print("Scaled: ", images_dict["qt_image_size"])
+            images_dict["image_ratio"] = {"width" : ratio_w, "height": ratio_h}
+
+            print("IMAGES DICT:", images_dict["image_ratio"])
+
             label_dict.image_label.setPixmap(qt_hsv_mask)
         except Exception as e:
             print('Read image fails:', e)
+            traceback.print_exc()
 
-    @staticmethod
-    def applyLines(label_dict, image_cv):
-        image_qt = Utils.convert_cv_qt(image_cv)
-        label_dict.output_image_label.setPixmap(image_qt)
+
 
     @staticmethod
     def updateHSVMasking(images_dict, label_dict, sliders = None):
@@ -161,10 +186,16 @@ class GUIUtils:
         from main import run
         button_start_detection = QPushButton('Start Detection', parent)
         button_start_detection.setToolTip('Proceed to Vehicle Counting module.')
-        button_start_detection.clicked.connect(lambda: run(images_dict))
+        button_start_detection.clicked.connect(lambda: run(images_dict, parent.lines))
         buttons_dict[BUTTON_START_DETECTION] = button_start_detection
         target_layout.addWidget(button_start_detection, 7, 1)
 
+    @staticmethod
+    def setupLineList(parent, lines, target_layout):
+        from GUI.line_list import LineListWidget
+        list_widget = LineListWidget(parent, lines)
+        parent.line_list_widget = list_widget
+        target_layout.addWidget(list_widget, 0, 2, 7, 1)
 
     @staticmethod
     def refreshImage(images_dict, label_dict, sliders=None):
@@ -240,7 +271,8 @@ class GUIUtils:
                 GUIUtils.refreshImage(images_dict, label_dict, sliders=sliders)
             print(fileName)
             with open(fileName+'.pickle', 'rb') as handle:
-                print(pickle.load(handle))
+                parent.lines = pickle.load(handle)
+                GUIUtils.refreshLines(parent, label_dict, images_dict)
         except:
             print("Read config failed!")
             traceback.print_exc()

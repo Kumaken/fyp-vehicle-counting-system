@@ -24,6 +24,8 @@ class DisplayImageWidget(QtWidgets.QWidget):
         self.images_dict = CustomDict()
         for key in IMAGE_DICT_KEYS:
             self.images_dict[key] = None
+        self.images_dict["qt_image_size"] = None
+        self.images_dict["image_ratio"] = None
 
         self.label_dict = CustomDict({
             'image_label': QLabel(self),
@@ -42,6 +44,7 @@ class DisplayImageWidget(QtWidgets.QWidget):
             BUTTON_SAVE_IMG: None,
             BUTTON_CAPTURE_IMG: None
         })
+        self.line_list_widget = None
 
         # SET
         self.setup_GUI()
@@ -72,6 +75,7 @@ class DisplayImageWidget(QtWidgets.QWidget):
         self.main_layout = QVBoxLayout()
         GUIUtils.setupImageLayout(self, self.layout_dict.image_layout, self.label_dict, self.images_dict)
         GUIUtils.setupButtons(self, self.buttons_dict, self.images_dict, self.label_dict, self.sliders, self.layout_dict.image_layout)
+        GUIUtils.setupLineList(self, self.lines, self.layout_dict.image_layout)
         self.main_layout.addLayout(self.layout_dict.image_layout)
 
         # load the test image - we really should have checked that this worked!

@@ -44,7 +44,7 @@ def stop():
     stop_detection = True
     logger.info('Loop stopped.', extra={'meta': {'label': 'STOP_LOOP'}})
 
-def run(images_dict):
+def run(images_dict, detection_lines):
     '''
     Initialize object counter class and run counting loop.
     '''
@@ -53,6 +53,10 @@ def run(images_dict):
     stop_detection = False
     is_paused = False
     output_frame = None
+
+    # SET ENV VARIABLES (DETECTION LINES)
+    print("Detection lines:", detection_lines)
+    settings.COUNTING_LINES = detection_lines
 
     video = settings.VIDEO
     cap = cv2.VideoCapture(video)
