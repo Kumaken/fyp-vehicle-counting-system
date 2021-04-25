@@ -79,8 +79,8 @@ class DisplayImageWidget(QtWidgets.QWidget):
         self.main_layout.addLayout(self.layout_dict.image_layout)
 
         # load the test image - we really should have checked that this worked!
-        # self.images_dict.source_img_cv2 = cv2.imread(self.images_dict.SOURCE_IMG_PATH)
-        # self.images_dict.source_img_cv2 = cv2.imread('data/images/road-no-cars.jpg')
+        # self.images_dict[SOURCE_IMG_CV2] = cv2.imread(self.images_dict.SOURCE_IMG_PATH)
+        # self.images_dict[SOURCE_IMG_CV2] = cv2.imread('data/images/road-no-cars.jpg')
 
         # SLIDERS:
         self.layout_dict.sliders_layout = QGridLayout()

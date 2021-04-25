@@ -11,7 +11,7 @@ from PyQt5.QtCore import Qt, QDir
 # import custom modules:
 from GUI.sliders import Sliders
 from GUI.utils import Utils
-from GUI.const import BUTTON_OPEN_IMG, BUTTON_SAVE_IMG, BUTTON_SAVE_CONFIG, BUTTON_CAPTURE_IMG, BUTTON_LOAD_CONFIG, BUTTON_START_DETECTION, SOURCE_IMG_PATH, OUTPUT_IMG_CV2, OUTPUT_IMG_QT, MASK_IMG_CV2, SLIDER_LABELS, CSV_CONFIG_KEYS
+from GUI.const import BUTTON_OPEN_IMG, BUTTON_SAVE_IMG, BUTTON_SAVE_CONFIG, BUTTON_CAPTURE_IMG, BUTTON_LOAD_CONFIG, BUTTON_START_DETECTION, SOURCE_IMG_PATH, OUTPUT_IMG_CV2, OUTPUT_IMG_QT, MASK_IMG_CV2, SLIDER_LABELS, CSV_CONFIG_KEYS, SOURCE_IMG_CV2
 from GUI.video_player import VideoPlayer
 
 class GUIUtils:
@@ -55,7 +55,8 @@ class GUIUtils:
     @staticmethod
     def drawLines(parent, images_dict):
         from GUI.config import Config
-        image = images_dict[OUTPUT_IMG_CV2]
+        import copy
+        image = copy.deepcopy(images_dict[SOURCE_IMG_CV2])
         for line_entry in parent.lines:
             point1, point2 = line_entry['line']
             print("Drawing line between: ", point1, point2)
@@ -98,13 +99,13 @@ class GUIUtils:
     @staticmethod
     def setupSourceImage(images_dict, label_dict):
         try:
-            images_dict.source_img_cv2 = cv2.imread(images_dict.SOURCE_IMG_PATH)
-            qt_hsv_mask = Utils.convert_cv_qt(images_dict.source_img_cv2,)
+            images_dict[SOURCE_IMG_CV2] = cv2.imread(images_dict.SOURCE_IMG_PATH)
+            qt_hsv_mask = Utils.convert_cv_qt(images_dict[SOURCE_IMG_CV2],)
             # set qt image size
             images_dict["qt_image_size"] = {"width": qt_hsv_mask.width(), "height": qt_hsv_mask.height()}
             print("IMAGES_DICT QT_IMAGE_SIZE", images_dict["qt_image_size"])
             # set qt image ratio for conversion back to cv2 size
-            og_width, og_height  = images_dict.source_img_cv2.shape[1::-1]
+            og_width, og_height  = images_dict[SOURCE_IMG_CV2].shape[1::-1]
             ratio_h, ratio_w = og_height/images_dict["qt_image_size"]["height"], og_width/images_dict["qt_image_size"]["width"]
             print("OG:", og_width, og_height)
             print("Scaled: ", images_dict["qt_image_size"])
@@ -130,7 +131,7 @@ class GUIUtils:
                 lower = np.array([sliders[0].getSliderValue(), sliders[1].getSliderValue(), sliders[2].getSliderValue()], dtype="uint8")
                 upper = np.array([sliders[3].getSliderValue(), sliders[4].getSliderValue(), sliders[5].getSliderValue()], dtype="uint8")
 
-            cv_hsv_mask = cv2.inRange(images_dict.source_img_cv2, lower, upper)
+            cv_hsv_mask = cv2.inRange(images_dict[SOURCE_IMG_CV2], lower, upper)
             qt_hsv_mask = Utils.convert_cv_qt(cv_hsv_mask)
 
             # update image
@@ -141,7 +142,7 @@ class GUIUtils:
             qt_enhanced_mask = Utils.convert_cv_qt(enhanced_mask)
             label_dict.mask_enhanced_label.setPixmap(qt_enhanced_mask)
 
-            masked_img = Utils.maskImage(images_dict.source_img_cv2, enhanced_mask)
+            masked_img = Utils.maskImage(images_dict[SOURCE_IMG_CV2], enhanced_mask)
             images_dict[OUTPUT_IMG_CV2] = masked_img
 
             qt_masked_img = Utils.convert_cv_qt(masked_img)
@@ -256,7 +257,7 @@ class GUIUtils:
     def read_HSV_config_csv(parent, sliders, images_dict, label_dict):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        fileName, _ = QFileDialog.getOpenFileName(parent,"QFileDialog.getOpenFileName()", "","csv(*.csv)", options=options)
+        fileName, _ = QFileDialog.getOpenFileName(parent,"Load Config", "","csv(*.csv)", options=options)
         print(fileName)
         try:
             with open(fileName, 'r', newline='') as f:
