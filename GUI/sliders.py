@@ -6,9 +6,7 @@ class Sliders(QWidget):
     def __init__(self, name, slider_val=90, parent=None):
         super().__init__(parent=parent) # HAS TO PASS PARENT SO THIS COULD GET UPDATED (valueChanged called)
         vbox = QVBoxLayout()
-        self.l1 = QLabel("Hello")
-        self.l1.setAlignment(Qt.AlignCenter)
-        vbox.addWidget(self.l1)
+
 
         self.sl = QSlider(Qt.Horizontal)
         self.sl.setMinimum(1)
@@ -18,12 +16,20 @@ class Sliders(QWidget):
         self.sl.setTickPosition(QSlider.TicksBothSides)
         self.sl.setTickInterval(1)
         self.sl.valueChanged[int].connect(self.valuechange)
-        print("__init__vSl -> ", slider_val)
+        self.sl.resize(1000, self.height())
+
         vbox.addWidget(self.sl)
 
-        vbox.addStretch(1)
+        self.l1 = QLabel("Value: " + str(self.sl.value()))
+        self.l1.setAlignment(Qt.AlignCenter)
+        vbox.addWidget(self.l1)
+
+        # vbox.addStretch(1)
+        # vbox.resize(1000, self.height())
+
         self.groupBox = QGroupBox(name)
         self.groupBox.setLayout(vbox)
+        self.resize(1000, self.height())
 
     def valuechange(self, value):
         #self.size = self.sl.value()

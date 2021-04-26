@@ -85,7 +85,7 @@ class DisplayImageWidget(QtWidgets.QWidget):
         # SLIDERS:
         self.layout_dict.sliders_layout = QGridLayout()
         GUIUtils.createHSVSliders(self.layout_dict.sliders_layout, self.sliders, self.images_dict, self.label_dict, self)
-        self.main_layout.addLayout(self.layout_dict.sliders_layout)
+        self.layout_dict.image_layout.addLayout(self.layout_dict.sliders_layout, 0, 2, 6, 4)
 
 
         GUIUtils.setupSourceImage(self.images_dict, self.label_dict)

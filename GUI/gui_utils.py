@@ -76,14 +76,18 @@ class GUIUtils:
 
     @staticmethod
     def setupImageLayout(parent, image_layout, label_dict, image_dict):
-        image_layout.addWidget(label_dict.image_label, 0, 0, 3, 1)
-        image_layout.addWidget(label_dict.text_label, 3, 0)
-        image_layout.addWidget(label_dict.mask_label, 4, 0)
-        image_layout.addWidget(label_dict.mask_enhanced_label, 4, 1)
+        image_layout.addWidget(QLabel("Source Image"), 0, 0)
+        image_layout.addWidget(label_dict.image_label, 1, 0, 3, 1)
+        # image_layout.addWidget(label_dict.text_label, 3, 0)
+        image_layout.addWidget(QLabel("Mask"), 4, 0)
+        image_layout.addWidget(label_dict.mask_label, 5, 0)
+        image_layout.addWidget(QLabel("Mask Enhanced"), 4, 1)
+        image_layout.addWidget(label_dict.mask_enhanced_label, 5, 1)
 
         # prepare output label:
         label_dict.output_image_label.mousePressEvent = lambda event: GUIUtils.getClickPositionOnImage(event, label_dict, image_dict, parent)
-        image_layout.addWidget(label_dict.output_image_label, 5, 0, 3, 1)
+        image_layout.addWidget(QLabel("Output Image"), 6, 0)
+        image_layout.addWidget(label_dict.output_image_label, 7, 0, 4, 2)
         # image_layout.addWidget(label_dict.output_image_label, 3, 0, 1, 2, Qt.AlignCenter)
 
 
@@ -94,7 +98,7 @@ class GUIUtils:
             slider = Sliders(SLIDER_LABELS[i], 1 if i<3 else 255, parent) # IMPORTANT: PASS SELF AS PARENT!
             slider.sl.valueChanged[int].connect(lambda: GUIUtils.updateHSVMasking(images_dict, label_dict, sliders))
             sliders.append(slider)
-            grid.addWidget(slider.getComponent(), i % 3, 0 if i < 3 else 1)
+            grid.addWidget(slider.getComponent(), i % 3, 0 if i < 3 else 2, 1, 2)
 
     @staticmethod
     def setupSourceImage(images_dict, label_dict):
@@ -145,7 +149,7 @@ class GUIUtils:
             masked_img = Utils.maskImage(images_dict[SOURCE_IMG_CV2], enhanced_mask)
             images_dict[OUTPUT_IMG_CV2] = masked_img
 
-            qt_masked_img = Utils.convert_cv_qt(masked_img)
+            qt_masked_img = Utils.convert_cv_qt(masked_img, multiplier=3)
             images_dict[OUTPUT_IMG_QT] = qt_masked_img
             label_dict.output_image_label.setPixmap(qt_masked_img)
         except Exception as e:
@@ -158,45 +162,45 @@ class GUIUtils:
         button.setToolTip('Select image path to process.')
         button.clicked.connect(lambda: GUIUtils.openImageDialog(parent, images_dict, label_dict))
         buttons_dict[BUTTON_OPEN_IMG] = button
-        target_layout.addWidget(button, 0, 1)
+        target_layout.addWidget(button, 1, 1)
 
         button_load_config = QPushButton('Upload Config', parent)
         button_load_config.setToolTip('Select config path to process.')
         button_load_config.clicked.connect(lambda: GUIUtils.read_HSV_config_csv(parent, sliders, images_dict, label_dict))
         buttons_dict[BUTTON_LOAD_CONFIG] = button_load_config
-        target_layout.addWidget(button_load_config, 1, 1)
+        target_layout.addWidget(button_load_config, 2, 1)
 
         button_video = QPushButton('Capture from Video', parent)
         button_video.setToolTip('Select an image frame from a video.')
         button_video.clicked.connect(lambda: GUIUtils.openVideoPlayer(parent, images_dict, label_dict))
         buttons_dict[BUTTON_CAPTURE_IMG] = button_video
-        target_layout.addWidget(button_video, 2, 1)
+        target_layout.addWidget(button_video, 3, 1)
 
         button_save = QPushButton('Save Image', parent)
         button_save.setToolTip('Select file path to save into.')
         button_save.clicked.connect(lambda: GUIUtils.saveImageDialog(parent, images_dict[MASK_IMG_CV2]))
         buttons_dict[BUTTON_SAVE_IMG] = button_save
-        target_layout.addWidget(button_save, 5, 1)
+        target_layout.addWidget(button_save, 7, 2)
 
         button_save_config = QPushButton('Save Mask Config', parent)
         button_save_config.setToolTip('Select file path to save the sliders config into.')
         button_save_config.clicked.connect(lambda: GUIUtils.save_HSV_config_csv(sliders, images_dict, parent.lines))
         buttons_dict[BUTTON_SAVE_CONFIG] = button_save_config
-        target_layout.addWidget(button_save_config, 6, 1)
+        target_layout.addWidget(button_save_config, 8, 2)
 
         from main import run
         button_start_detection = QPushButton('Start Detection', parent)
         button_start_detection.setToolTip('Proceed to Vehicle Counting module.')
         button_start_detection.clicked.connect(lambda: run(images_dict, parent.lines))
         buttons_dict[BUTTON_START_DETECTION] = button_start_detection
-        target_layout.addWidget(button_start_detection, 7, 1)
+        target_layout.addWidget(button_start_detection, 9, 2)
 
     @staticmethod
     def setupLineList(parent, lines, target_layout):
         from GUI.line_list import LineListWidget
         list_widget = LineListWidget(parent, lines)
         parent.line_list_widget = list_widget
-        target_layout.addWidget(list_widget, 0, 2, 7, 1)
+        target_layout.addWidget(list_widget, 0, 6, 9, 2)
 
     @staticmethod
     def refreshImage(images_dict, label_dict, sliders=None):
