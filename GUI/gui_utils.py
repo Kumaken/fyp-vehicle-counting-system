@@ -5,7 +5,7 @@ import numpy as np
 import cv2
 import csv
 import pickle # serializing tuples/objects/lists easily
-from PyQt5.QtWidgets import (QLabel, QFileDialog, QPushButton, QDialog)
+from PyQt5.QtWidgets import (QLabel, QFileDialog, QPushButton, QDialog, QGridLayout)
 from PyQt5.QtCore import Qt, QDir
 
 # import custom modules:
@@ -65,7 +65,7 @@ class GUIUtils:
 
     @staticmethod
     def applyLines(label_dict, image_cv):
-        image_qt = Utils.convert_cv_qt(image_cv)
+        image_qt = Utils.convert_cv_qt(image_cv, multiplier=3)
         label_dict.output_image_label.setPixmap(image_qt)
 
     @staticmethod
@@ -77,17 +77,17 @@ class GUIUtils:
     @staticmethod
     def setupImageLayout(parent, image_layout, label_dict, image_dict):
         image_layout.addWidget(QLabel("Source Image"), 0, 0)
-        image_layout.addWidget(label_dict.image_label, 1, 0, 3, 1)
+        image_layout.addWidget(label_dict.image_label, 1, 0)
         # image_layout.addWidget(label_dict.text_label, 3, 0)
-        image_layout.addWidget(QLabel("Mask"), 4, 0)
-        image_layout.addWidget(label_dict.mask_label, 5, 0)
-        image_layout.addWidget(QLabel("Mask Enhanced"), 4, 1)
-        image_layout.addWidget(label_dict.mask_enhanced_label, 5, 1)
+        image_layout.addWidget(QLabel("Mask"), 0, 1)
+        image_layout.addWidget(label_dict.mask_label, 1, 1)
+        image_layout.addWidget(QLabel("Mask Enhanced"), 0, 2)
+        image_layout.addWidget(label_dict.mask_enhanced_label, 1, 2)
 
         # prepare output label:
         label_dict.output_image_label.mousePressEvent = lambda event: GUIUtils.getClickPositionOnImage(event, label_dict, image_dict, parent)
-        image_layout.addWidget(QLabel("Output Image"), 6, 0)
-        image_layout.addWidget(label_dict.output_image_label, 7, 0, 4, 2)
+        image_layout.addWidget(QLabel("Output Image"), 2, 0)
+        image_layout.addWidget(label_dict.output_image_label, 3, 0, 3, 3)
         # image_layout.addWidget(label_dict.output_image_label, 3, 0, 1, 2, Qt.AlignCenter)
 
 
@@ -98,15 +98,16 @@ class GUIUtils:
             slider = Sliders(SLIDER_LABELS[i], 1 if i<3 else 255, parent) # IMPORTANT: PASS SELF AS PARENT!
             slider.sl.valueChanged[int].connect(lambda: GUIUtils.updateHSVMasking(images_dict, label_dict, sliders))
             sliders.append(slider)
-            grid.addWidget(slider.getComponent(), i % 3, 0 if i < 3 else 2, 1, 2)
+            grid.addWidget(slider.getComponent(), i % 3, 0 if i < 3 else 1)
 
     @staticmethod
     def setupSourceImage(images_dict, label_dict):
         try:
             images_dict[SOURCE_IMG_CV2] = cv2.imread(images_dict.SOURCE_IMG_PATH)
-            qt_hsv_mask = Utils.convert_cv_qt(images_dict[SOURCE_IMG_CV2],)
+            qt_src_image = Utils.convert_cv_qt(images_dict[SOURCE_IMG_CV2])
+            qt_output_img = Utils.convert_cv_qt(images_dict[SOURCE_IMG_CV2], multiplier=3)
             # set qt image size
-            images_dict["qt_image_size"] = {"width": qt_hsv_mask.width(), "height": qt_hsv_mask.height()}
+            images_dict["qt_image_size"] = {"width": qt_output_img.width(), "height": qt_output_img.height()}
             print("IMAGES_DICT QT_IMAGE_SIZE", images_dict["qt_image_size"])
             # set qt image ratio for conversion back to cv2 size
             og_width, og_height  = images_dict[SOURCE_IMG_CV2].shape[1::-1]
@@ -117,7 +118,8 @@ class GUIUtils:
 
             print("IMAGES DICT:", images_dict["image_ratio"])
 
-            label_dict.image_label.setPixmap(qt_hsv_mask)
+            label_dict.image_label.setPixmap(qt_src_image)
+            label_dict.output_image_label.setPixmap(qt_output_img)
         except Exception as e:
             print('Read image fails:', e)
             traceback.print_exc()
@@ -157,50 +159,53 @@ class GUIUtils:
 
 
     @staticmethod
-    def setupButtons(parent, buttons_dict, images_dict, label_dict, sliders, target_layout):
-        button = QPushButton('Upload Image', parent)
+    def setupButtons(parent, buttons_dict, images_dict, label_dict, sliders):
+        buttons_layout = QGridLayout()
+        button = QPushButton('Load Image', parent)
         button.setToolTip('Select image path to process.')
         button.clicked.connect(lambda: GUIUtils.openImageDialog(parent, images_dict, label_dict))
         buttons_dict[BUTTON_OPEN_IMG] = button
-        target_layout.addWidget(button, 1, 1)
+        buttons_layout.addWidget(button, 1, 3)
 
-        button_load_config = QPushButton('Upload Config', parent)
+        button_load_config = QPushButton('Load Config', parent)
         button_load_config.setToolTip('Select config path to process.')
         button_load_config.clicked.connect(lambda: GUIUtils.read_HSV_config_csv(parent, sliders, images_dict, label_dict))
         buttons_dict[BUTTON_LOAD_CONFIG] = button_load_config
-        target_layout.addWidget(button_load_config, 2, 1)
+        buttons_layout.addWidget(button_load_config, 2, 3)
 
         button_video = QPushButton('Capture from Video', parent)
         button_video.setToolTip('Select an image frame from a video.')
         button_video.clicked.connect(lambda: GUIUtils.openVideoPlayer(parent, images_dict, label_dict))
         buttons_dict[BUTTON_CAPTURE_IMG] = button_video
-        target_layout.addWidget(button_video, 3, 1)
+        buttons_layout.addWidget(button_video, 3, 3)
 
         button_save = QPushButton('Save Image', parent)
         button_save.setToolTip('Select file path to save into.')
         button_save.clicked.connect(lambda: GUIUtils.saveImageDialog(parent, images_dict[MASK_IMG_CV2]))
         buttons_dict[BUTTON_SAVE_IMG] = button_save
-        target_layout.addWidget(button_save, 7, 2)
+        buttons_layout.addWidget(button_save, 1, 4)
 
         button_save_config = QPushButton('Save Mask Config', parent)
         button_save_config.setToolTip('Select file path to save the sliders config into.')
         button_save_config.clicked.connect(lambda: GUIUtils.save_HSV_config_csv(sliders, images_dict, parent.lines))
         buttons_dict[BUTTON_SAVE_CONFIG] = button_save_config
-        target_layout.addWidget(button_save_config, 8, 2)
+        buttons_layout.addWidget(button_save_config, 2, 4)
 
         from main import run
         button_start_detection = QPushButton('Start Detection', parent)
         button_start_detection.setToolTip('Proceed to Vehicle Counting module.')
         button_start_detection.clicked.connect(lambda: run(images_dict, parent.lines))
         buttons_dict[BUTTON_START_DETECTION] = button_start_detection
-        target_layout.addWidget(button_start_detection, 9, 2)
+        buttons_layout.addWidget(button_start_detection, 3, 4)
+
+        return buttons_layout
 
     @staticmethod
     def setupLineList(parent, lines, target_layout):
         from GUI.line_list import LineListWidget
         list_widget = LineListWidget(parent, lines)
         parent.line_list_widget = list_widget
-        target_layout.addWidget(list_widget, 0, 6, 9, 2)
+        target_layout.addWidget(list_widget, 0, 5, 6, 5)
 
     @staticmethod
     def refreshImage(images_dict, label_dict, sliders=None):
@@ -211,10 +216,13 @@ class GUIUtils:
     def openImageDialog(parent, images_dict, label_dict):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        fileName, _ = QFileDialog.getOpenFileName(parent,"QFileDialog.getOpenFileName()", "","All Files (*);;Python Files (*.py)", options=options)
+        fileName, _ = QFileDialog.getOpenFileName(parent,"Select an image", "","All Files (*);;Python Files (*.py)", options=options)
         print(fileName)
-        images_dict[SOURCE_IMG_PATH] = fileName
-        GUIUtils.refreshImage(images_dict, label_dict)
+        if (fileName):
+            images_dict[SOURCE_IMG_PATH] = fileName
+            GUIUtils.refreshImage(images_dict, label_dict)
+            parent.lines = [] # reset lines
+            GUIUtils.refreshLines(parent, label_dict, images_dict)
 
     @staticmethod
     def saveImageDialog(parent, image, cv=True):
@@ -275,8 +283,14 @@ class GUIUtils:
                     sliders[i].setSliderValue(int(config_dict[label]))
                 GUIUtils.refreshImage(images_dict, label_dict, sliders=sliders)
             print(fileName)
-            with open(fileName+'.pickle', 'rb') as handle:
-                parent.lines = pickle.load(handle)
+            try:
+                with open(fileName+'.pickle', 'rb') as handle:
+                    parent.lines = pickle.load(handle)
+                    GUIUtils.refreshLines(parent, label_dict, images_dict)
+            except:
+                print("Pickle read failed!")
+                traceback.print_exc()
+                parent.lines = []
                 GUIUtils.refreshLines(parent, label_dict, images_dict)
         except:
             print("Read config failed!")

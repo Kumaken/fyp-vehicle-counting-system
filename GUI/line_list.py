@@ -34,10 +34,15 @@ class LineListWidget(QListWidget):
         new_label, ok_pressed = QInputDialog.getText(self, "Select new label for this line","New label:", QLineEdit.Normal, item.text())
 
         if ok_pressed and new_label != '':
+            i = 0
+            while i < len(self.parent.lines):
+                if self.parent.lines[i]['label'] == item.text():
+                    self.parent.lines[i]['label'] = new_label
+                i += 1
 
-            for d in self.parent.lines:
-                d.update((k, new_label) for k, v in d.items() if k == 'label' and v == item.text())
-            item.setText(new_label)
+            items_list = self.findItems(item.text(), Qt.MatchExactly)
+            for item_ in items_list:
+                item_.setText(new_label)
             print(self.parent.lines)
             from GUI.gui_utils import GUIUtils
             result_cv2_img = GUIUtils.drawLines(self.parent, self.parent.images_dict)

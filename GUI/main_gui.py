@@ -1,7 +1,8 @@
 from PyQt5 import QtGui, QtCore, QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QApplication, QCheckBox, QGridLayout, QGroupBox,
-                             QMenu, QPushButton, QRadioButton, QVBoxLayout, QWidget, QSlider, QFileDialog, QLabel)
+                             QMenu, QPushButton, QRadioButton, QHBoxLayout,
+                             QVBoxLayout, QWidget, QSlider, QFileDialog, QLabel)
 from PyQt5.QtGui import QPainter, QPen
 
 import cv2
@@ -34,7 +35,7 @@ class DisplayImageWidget(QtWidgets.QWidget):
             'output_image_label' : QLabel(self),
             'text_label' : QLabel(self)
         })
-        self.main_layout = QVBoxLayout()
+        self.main_layout = QHBoxLayout()
         self.layout_dict = CustomDict({
             'image_layout' : QGridLayout(),
             'sliders_layout' : QGridLayout()
@@ -72,20 +73,25 @@ class DisplayImageWidget(QtWidgets.QWidget):
         self.setWindowTitle("HSV Based RoI Segmentations")
 
         # create a vertical box layout and add the two labels
-        self.main_layout = QVBoxLayout()
         GUIUtils.setupImageLayout(self, self.layout_dict.image_layout, self.label_dict, self.images_dict)
-        GUIUtils.setupButtons(self, self.buttons_dict, self.images_dict, self.label_dict, self.sliders, self.layout_dict.image_layout)
-        GUIUtils.setupLineList(self, self.lines, self.layout_dict.image_layout)
         self.main_layout.addLayout(self.layout_dict.image_layout)
-
-        # load the test image - we really should have checked that this worked!
-        # self.images_dict[SOURCE_IMG_CV2] = cv2.imread(self.images_dict.SOURCE_IMG_PATH)
-        # self.images_dict[SOURCE_IMG_CV2] = cv2.imread('data/images/road-no-cars.jpg')
 
         # SLIDERS:
         self.layout_dict.sliders_layout = QGridLayout()
+        second_column = QVBoxLayout()
         GUIUtils.createHSVSliders(self.layout_dict.sliders_layout, self.sliders, self.images_dict, self.label_dict, self)
-        self.layout_dict.image_layout.addLayout(self.layout_dict.sliders_layout, 0, 2, 6, 4)
+        second_column.addLayout(self.layout_dict.sliders_layout)
+
+        buttons_layout = GUIUtils.setupButtons(self, self.buttons_dict, self.images_dict, self.label_dict, self.sliders)
+        second_column.addLayout(buttons_layout)
+
+        self.main_layout.addLayout(second_column)
+
+
+        third_column = QGridLayout()
+        GUIUtils.setupLineList(self, self.lines, third_column)
+        self.main_layout.addLayout(third_column)
+
 
 
         GUIUtils.setupSourceImage(self.images_dict, self.label_dict)

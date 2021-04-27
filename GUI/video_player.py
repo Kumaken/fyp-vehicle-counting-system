@@ -81,7 +81,7 @@ class VideoPlayer(QWidget):
         GUIUtils.refreshImage(self.main_window.images_dict, self.main_window.label_dict)
 
     def abrir(self):
-        fileName, _ = QFileDialog.getOpenFileName(self, "Selecciona los mediose",
+        fileName, _ = QFileDialog.getOpenFileName(self, "Select a video",
                 ".", "Video Files (*.mp4 *.flv *.ts *.mts *.avi)")
 
         if fileName != '':
