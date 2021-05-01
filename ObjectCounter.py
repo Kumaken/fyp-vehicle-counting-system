@@ -40,6 +40,9 @@ class ObjectCounter():
         # create blobs from initial frame
         # CHANGE:
         # droi_frame = get_roi_frame(self.frame, self.droi)
+        # cv2.imshow("test mask in ObjectCounter", self.droi);
+        # cv2.imshow("test ori", self.frame);
+        cv2.waitKey(0);
         droi_frame = Utils.maskImage(self.frame, self.droi)
         _bounding_boxes, _classes, _confidences = get_bounding_boxes(droi_frame, self.detector)
         self.blobs = add_new_blobs(_bounding_boxes, _classes, _confidences, self.blobs, self.frame, self.tracker, self.mcdf)
@@ -104,8 +107,8 @@ class ObjectCounter():
 
         # show detection roi
         # CHANGE
-        # if self.show_droi:
-        #     frame = draw_roi(frame, self.droi)
+        if self.show_droi:
+            frame = draw_roi(frame, self.droi)
 
         # show counts
         if self.show_counts:

@@ -143,7 +143,8 @@ class GUIUtils:
             # update image
             label_dict.mask_label.setPixmap(qt_hsv_mask)
 
-            enhanced_mask = Utils.enhanceMask(cv_hsv_mask)
+            # enhanced_mask = Utils.enhanceMask(cv_hsv_mask)
+            enhanced_mask = Utils.post_process(cv_hsv_mask)
             images_dict[MASK_IMG_CV2] = enhanced_mask
             qt_enhanced_mask = Utils.convert_cv_qt(enhanced_mask)
             label_dict.mask_enhanced_label.setPixmap(qt_enhanced_mask)
@@ -191,14 +192,26 @@ class GUIUtils:
         buttons_dict[BUTTON_SAVE_CONFIG] = button_save_config
         buttons_layout.addWidget(button_save_config, 2, 4)
 
-        from main import run
+
         button_start_detection = QPushButton('Start Detection', parent)
         button_start_detection.setToolTip('Proceed to Vehicle Counting module.')
-        button_start_detection.clicked.connect(lambda: run(images_dict, parent.lines))
+        button_start_detection.clicked.connect(lambda: GUIUtils.startDetection(parent, images_dict, parent.lines))
         buttons_dict[BUTTON_START_DETECTION] = button_start_detection
         buttons_layout.addWidget(button_start_detection, 3, 4)
 
         return buttons_layout
+
+    @staticmethod
+    def startDetection(parent, images_dict, lines):
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        fileName, _ = QFileDialog.getOpenFileName(parent, "Select a video to run the detector on", "", "Video Files (*.mp4 *.flv *.ts *.mts *.avi)", options=options)
+        print(fileName)
+        if (fileName):
+            from main import run
+            run(images_dict, lines, video_path=fileName)
+        else:
+            print("videofile invalid!")
 
     @staticmethod
     def setupLineList(parent, lines, target_layout):

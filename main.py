@@ -44,7 +44,7 @@ def stop():
     stop_detection = True
     logger.info('Loop stopped.', extra={'meta': {'label': 'STOP_LOOP'}})
 
-def run(images_dict, detection_lines):
+def run(images_dict, detection_lines, video_path):
     '''
     Initialize object counter class and run counting loop.
     '''
@@ -91,10 +91,16 @@ def run(images_dict, detection_lines):
     record = settings.RECORD
     if record:
         # initialize video object to record counting
-        output_video = cv2.VideoWriter(settings.OUTPUT_VIDEO_PATH, \
-                                        cv2.VideoWriter_fourcc(*'MJPG'), \
-                                        30, \
-                                        (f_width, f_height))
+        # CHANGE
+        # output_video = cv2.VideoWriter(settings.OUTPUT_VIDEO_PATH, \
+        #                                 cv2.VideoWriter_fourcc(*'MJPG'), \
+        #                                 30, \
+        #                                 (f_width, f_height))
+        output_video = cv2.VideoWriter(video_path, \
+                                cv2.VideoWriter_fourcc(*'MJPG'), \
+                                30, \
+                                (f_width, f_height))
+
 
     logger.info('Processing started.', extra={
         'meta': {
@@ -189,4 +195,10 @@ def run(images_dict, detection_lines):
 
 from GUI.main_gui import start_GUI
 if __name__ == '__main__':
+    # images_dict = {}
+    # images_dict[MASK_IMG_CV2] = cv2.cvtColor(cv2.imread("data/videos/empty.jpg"), cv2.COLOR_BGR2GRAY)
+    # # cv2.imshow("test mask", images_dict[MASK_IMG_CV2]);
+    # # cv2.waitKey(0);
+    # lines = [{'label': 'A', 'line': [(667, 713), (888, 713)]}, {'label': 'B', 'line': [(1054, 866), (1423, 868)]}]
+    # run(images_dict, lines)
     start_GUI()

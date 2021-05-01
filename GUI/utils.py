@@ -19,6 +19,35 @@ class Utils:
         return des
 
     @staticmethod
+    def extractLargerSegment(maskROAD):
+
+        contours, hierarchy = cv2.findContours(maskROAD.copy(),cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+
+        maxA = 0
+        maskTemp=np.zeros_like(maskROAD)
+
+        if(len(contours) > 0):
+            for h,cnt in enumerate(contours):
+                if(cv2.contourArea(cnt) > maxA):
+                    cntMax=cnt
+                    maxA = cv2.contourArea(cnt)
+            mask = np.zeros(maskROAD.shape,np.uint8)
+            cv2.drawContours(maskTemp,[cntMax],0,255,-1)
+            maskROAD = cv2.bitwise_and(maskROAD,maskTemp)
+        return maskROAD
+
+    @staticmethod
+    def post_process(img):
+        kernel = np.ones((5, 5), np.uint8)
+        img_out = cv2.erode(img, kernel,iterations=3)
+        kernel = np.ones((20, 20), np.uint8)
+        img_out = cv2.dilate(img_out, kernel,iterations=5)
+
+        img_out = Utils.extractLargerSegment(img_out)
+
+        return img_out
+
+    @staticmethod
     def maskImage(ori, mask):
         return cv2.bitwise_and(ori, ori, mask=mask)
 
