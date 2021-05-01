@@ -13,7 +13,7 @@ import sys
 from GUI.sliders import Sliders
 from GUI.gui_utils import GUIUtils
 from GUI.custom_dict import CustomDict
-from GUI.const import BUTTON_OPEN_IMG, BUTTON_SAVE_IMG, BUTTON_CAPTURE_IMG, SOURCE_IMG_PATH,IMAGE_DICT_KEYS, OUTPUT_IMG_QT
+from GUI.const import BUTTON_OPEN_IMG, BUTTON_SAVE_IMG, BUTTON_CAPTURE_IMG, SOURCE_IMG_PATH,IMAGE_DICT_KEYS, OUTPUT_IMG_QT, PLACEHOLDER_IMG_PATH
 from GUI.video_player import VideoPlayer
 
 class DisplayImageWidget(QtWidgets.QWidget):
@@ -92,12 +92,14 @@ class DisplayImageWidget(QtWidgets.QWidget):
         GUIUtils.setupLineList(self, self.lines, third_column)
         self.main_layout.addLayout(third_column)
 
+        # setup placeholder image:
+        self.images_dict[SOURCE_IMG_PATH] = PLACEHOLDER_IMG_PATH
+        GUIUtils.refreshImage(self, self.images_dict, self.label_dict, self.sliders)
 
-
-        GUIUtils.setupSourceImage(self.images_dict, self.label_dict)
-        # Find the pixels that correspond to road
-        # set lower and upper bounds
-        GUIUtils.updateHSVMasking(self.images_dict, self.label_dict, self.sliders)
+        # GUIUtils.setupSourceImage(self.images_dict, self.label_dict)
+        # # Find the pixels that correspond to road
+        # # set lower and upper bounds
+        # GUIUtils.updateHSVMasking(self.images_dict, self.label_dict, self.sliders)
 
 
 def start_GUI():

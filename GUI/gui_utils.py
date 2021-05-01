@@ -11,7 +11,7 @@ from PyQt5.QtCore import Qt, QDir
 # import custom modules:
 from GUI.sliders import Sliders
 from GUI.utils import Utils
-from GUI.const import BUTTON_OPEN_IMG, BUTTON_SAVE_IMG, BUTTON_SAVE_CONFIG, BUTTON_CAPTURE_IMG, BUTTON_LOAD_CONFIG, BUTTON_START_DETECTION, SOURCE_IMG_PATH, OUTPUT_IMG_CV2, OUTPUT_IMG_QT, MASK_IMG_CV2, SLIDER_LABELS, CSV_CONFIG_KEYS, SOURCE_IMG_CV2
+from GUI.const import BUTTON_OPEN_IMG, BUTTON_SAVE_IMG, BUTTON_SAVE_CONFIG, BUTTON_CAPTURE_IMG, BUTTON_LOAD_CONFIG, BUTTON_START_DETECTION, SOURCE_IMG_PATH, OUTPUT_IMG_CV2, OUTPUT_IMG_QT, MASK_IMG_CV2, SLIDER_LABELS, CSV_CONFIG_KEYS, SOURCE_IMG_CV2, PLACEHOLDER_IMG_PATH
 from GUI.video_player import VideoPlayer
 
 class GUIUtils:
@@ -56,7 +56,7 @@ class GUIUtils:
     def drawLines(parent, images_dict):
         from GUI.config import Config
         import copy
-        image = copy.deepcopy(images_dict[SOURCE_IMG_CV2])
+        image = copy.deepcopy(images_dict[OUTPUT_IMG_CV2])
         for line_entry in parent.lines:
             point1, point2 = line_entry['line']
             print("Drawing line between: ", point1, point2)
@@ -96,7 +96,7 @@ class GUIUtils:
     def createHSVSliders(grid, sliders, images_dict, label_dict, parent):
         for i in range(6):
             slider = Sliders(SLIDER_LABELS[i], 1 if i<3 else 255, parent) # IMPORTANT: PASS SELF AS PARENT!
-            slider.sl.valueChanged[int].connect(lambda: GUIUtils.updateHSVMasking(images_dict, label_dict, sliders))
+            slider.sl.valueChanged[int].connect(lambda: GUIUtils.refreshImage(parent, images_dict, label_dict, sliders))
             sliders.append(slider)
             grid.addWidget(slider.getComponent(), i % 3, 0 if i < 3 else 1)
 
@@ -208,9 +208,10 @@ class GUIUtils:
         target_layout.addWidget(list_widget, 0, 5, 6, 5)
 
     @staticmethod
-    def refreshImage(images_dict, label_dict, sliders=None):
+    def refreshImage(parent, images_dict, label_dict, sliders=None):
         GUIUtils.setupSourceImage(images_dict, label_dict)
         GUIUtils.updateHSVMasking(images_dict, label_dict, sliders=sliders)
+        GUIUtils.refreshLines(parent, label_dict, images_dict)
 
     @staticmethod
     def openImageDialog(parent, images_dict, label_dict):
@@ -220,9 +221,8 @@ class GUIUtils:
         print(fileName)
         if (fileName):
             images_dict[SOURCE_IMG_PATH] = fileName
-            GUIUtils.refreshImage(images_dict, label_dict)
             parent.lines = [] # reset lines
-            GUIUtils.refreshLines(parent, label_dict, images_dict)
+            GUIUtils.refreshImage(parent, images_dict, label_dict)
 
     @staticmethod
     def saveImageDialog(parent, image, cv=True):
@@ -238,7 +238,6 @@ class GUIUtils:
                 cv2.imwrite(fileName, image)
             else:
                 image.save(fileName)
-            parent.images_dict[SOURCE_IMG_PATH] = fileName
         else:
             print('Cancelled')
         # fileName, _ = QFileDialog.getSaveFileName(parent, "Save Image", "", filter, options=options)
@@ -281,17 +280,16 @@ class GUIUtils:
                 images_dict[SOURCE_IMG_PATH] = config_dict[SOURCE_IMG_PATH]
                 for i,label in enumerate(SLIDER_LABELS):
                     sliders[i].setSliderValue(int(config_dict[label]))
-                GUIUtils.refreshImage(images_dict, label_dict, sliders=sliders)
             print(fileName)
             try:
                 with open(fileName+'.pickle', 'rb') as handle:
                     parent.lines = pickle.load(handle)
-                    GUIUtils.refreshLines(parent, label_dict, images_dict)
             except:
                 print("Pickle read failed!")
                 traceback.print_exc()
                 parent.lines = []
-                GUIUtils.refreshLines(parent, label_dict, images_dict)
+
+            GUIUtils.refreshImage(parent, images_dict, label_dict, sliders=sliders)
         except:
             print("Read config failed!")
             traceback.print_exc()
