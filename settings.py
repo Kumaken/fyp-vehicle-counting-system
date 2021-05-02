@@ -210,6 +210,21 @@ except ValueError:
     ENVS_READY = False
 
 
+# IMAGE SCALE AND SIZE
+try:
+    IMG_VALUE_SCALE = float(os.getenv('IMG_VALUE_SCALE', '0.00392'))
+    IMG_SIZE = int(os.getenv('IMG_SIZE', '640'))
+except ValueError:
+    print('Invalid value for IMG_SCALE or IMG_SIZE. IMG_SCALE should be a float value. IMG_SIZE should be an integer value and a multiple of 32. Adjust accordingly to your .cfg file!')
+    ENVS_READY = False
+
+# NMS THRESHOLD
+try:
+    NMS_THRESHOLD = float(os.getenv('NMS_THRESHOLD', '0.4'))
+except ValueError:
+    print('Invalid value for NMS_THRESHOLD. It has to be a float!')
+    ENVS_READY = False
+
 if not ENVS_READY:
     raise Exception('One or more environment variables are either invalid or not set. ' +
                     'Please ensure all variables are properly set.')

@@ -78,7 +78,7 @@ class VideoPlayer(QWidget):
     def closeEvent(self, event):
         from GUI.gui_utils import GUIUtils
         print("Close event of video player is called!")
-        GUIUtils.refreshImage(self.main_window.images_dict, self.main_window.label_dict)
+        GUIUtils.refreshImage(self.main_window, self.main_window.images_dict, self.main_window.label_dict)
 
     def abrir(self):
         fileName, _ = QFileDialog.getOpenFileName(self, "Select a video",
@@ -122,12 +122,23 @@ class VideoPlayer(QWidget):
     def screenshotCall(self):
         #Call video frame grabber
         print("screenshotCall!")
+        self.mediaPlayer.pause()
+
+
         self.grabber = VideoFrameGrabber(self.videoWidget, self)
         self.mediaPlayer.setVideoOutput(self.grabber)
+        print("Frame available", self.grabber.frameAvailable)
         self.grabber.frameAvailable.connect(self.process_frame)
+
+
         self.statusBar.showMessage("Taking a screenshot of current frame...")
         # self.mediaPlayer.setVideoOutput(self.grabber)
+
+        # SOMEHOW NEED TO BE LIKE THIS FOR PRESENT TO BE TRIGGERED FOR CIDENG VID...
+        import time
+        time.sleep(1)
         self.mediaPlayer.pause()
+
 
     def process_frame(self, image):
         from GUI.gui_utils import GUIUtils

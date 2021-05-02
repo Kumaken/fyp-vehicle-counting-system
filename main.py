@@ -55,13 +55,14 @@ def run(images_dict, detection_lines, video_path):
     output_frame = None
 
     # SET ENV VARIABLES (DETECTION LINES)
-    print("Detection lines:", detection_lines)
+    print("[DEBUG][run] Detection lines:", detection_lines)
     settings.COUNTING_LINES = detection_lines
 
-    video = settings.VIDEO
+    print("[DEBUG][run] Setup video:", video_path)
+    video = video_path
     cap = cv2.VideoCapture(video)
     if not cap.isOpened():
-        logger.error('Invalid video source %s', video, extra={
+        logger.error('Not a valid video source: %s', video, extra={
             'meta': {'label': 'INVALID_VIDEO_SOURCE'},
         })
         sys.exit()
@@ -102,9 +103,9 @@ def run(images_dict, detection_lines, video_path):
                                 (f_width, f_height))
 
 
-    logger.info('Processing started.', extra={
+    logger.info('[DEBUG] Detector module is starting...', extra={
         'meta': {
-            'label': 'START_PROCESS',
+            'label': 'DETECTOR_BEGIN',
             'counter_config': {
                 'di': detection_interval,
                 'mcdf': mcdf,
@@ -119,10 +120,11 @@ def run(images_dict, detection_lines, video_path):
     })
 
     headless = settings.HEADLESS
+    window_name = "Detector Module"
     if not headless:
         # capture mouse events in the debug window
-        cv2.namedWindow('Debug')
-        cv2.setMouseCallback('Debug', mouse_callback, {'frame_width': f_width, 'frame_height': f_height})
+        cv2.namedWindow(window_name)
+        cv2.setMouseCallback('[DEBUG]', mouse_callback, {'frame_width': f_width, 'frame_height': f_height})
 
     # is_paused = False
 
@@ -135,8 +137,11 @@ def run(images_dict, detection_lines, video_path):
 
     try:
         # main loop
-        print("IS STOP? ", stop_detection)
+        # print("IS STOP? ", stop_detection)
         while not stop_detection and retval:
+            # 0xFF is a hexadecimal constant which is 11111111 in binary. Bitwise AND with 0xFF extracts 8 bits from cv2.waitKey (which returns 32 bits)
+            # waitKey(0) function returns -1 when no input is made. When a button is pressed, it returns a 32 bit integer
+            # waitKey(0) means shows indefinitely until keypress. waitKey(1) means it shows only for 1 ms
             k = cv2.waitKey(1) & 0xFF
             if k == ord('p'): # pause/play loop if 'p' key is pressed
                 play_or_pause()
@@ -154,6 +159,7 @@ def run(images_dict, detection_lines, video_path):
 
             _timer = cv2.getTickCount() # set timer to calculate processing frame rate
 
+            # OBJECT COUNTER STARTS:
             object_counter.count(frame)
             output_frame = object_counter.visualize()
 
@@ -163,7 +169,7 @@ def run(images_dict, detection_lines, video_path):
             if not headless:
                 debug_window_size = settings.DEBUG_WINDOW_SIZE
                 resized_frame = cv2.resize(output_frame, debug_window_size)
-                cv2.imshow('Debug', resized_frame)
+                cv2.imshow(window_name, resized_frame)
 
             processing_frame_rate = round(cv2.getTickFrequency() / (cv2.getTickCount() - _timer), 2)
             frames_processed += 1

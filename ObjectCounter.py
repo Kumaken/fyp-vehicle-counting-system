@@ -10,7 +10,7 @@ from joblib import Parallel, delayed
 
 from tracker import add_new_blobs, remove_duplicates, update_blob_tracker
 from detectors.detector import get_bounding_boxes
-from util.detection_roi import get_roi_frame, draw_roi
+from util.detection_roi import  draw_roi
 from util.logger import get_logger
 from counter import attempt_count
 

@@ -11,7 +11,7 @@ from PyQt5.QtCore import Qt, QDir
 # import custom modules:
 from GUI.sliders import Sliders
 from GUI.utils import Utils
-from GUI.const import BUTTON_OPEN_IMG, BUTTON_SAVE_IMG, BUTTON_SAVE_CONFIG, BUTTON_CAPTURE_IMG, BUTTON_LOAD_CONFIG, BUTTON_START_DETECTION, SOURCE_IMG_PATH, OUTPUT_IMG_CV2, OUTPUT_IMG_QT, MASK_IMG_CV2, SLIDER_LABELS, CSV_CONFIG_KEYS, SOURCE_IMG_CV2, PLACEHOLDER_IMG_PATH
+from GUI.const import BUTTON_OPEN_IMG, BUTTON_SAVE_IMG, BUTTON_SAVE_CONFIG, BUTTON_CAPTURE_IMG, BUTTON_LOAD_CONFIG, BUTTON_START_DETECTION, SOURCE_IMG_PATH, OUTPUT_IMG_CV2, OUTPUT_IMG_QT, MASK_IMG_CV2, SLIDER_LABELS, CSV_CONFIG_KEYS, SOURCE_IMG_CV2, PLACEHOLDER_IMG_PATH, BUTTON_LOAD_VIDEO
 from GUI.video_player import VideoPlayer
 
 class GUIUtils:
@@ -203,25 +203,69 @@ class GUIUtils:
 
     @staticmethod
     def startDetection(parent, images_dict, lines):
+        if parent.video_path:
+            video_path = parent.video_path
+        else:
+            options = QFileDialog.Options()
+            options |= QFileDialog.DontUseNativeDialog
+            fileName, _ = QFileDialog.getOpenFileName(parent, "Select a video to run the detector on", "", "Video Files (*.mp4 *.flv *.ts *.mts *.avi)", options=options)
+            print(fileName)
+            if (fileName):
+                video_path = fileName
+            else:
+                print("videofile invalid!")
+                return
+
+        from main import run
+        run(images_dict, lines, video_path=video_path)
+
+    @staticmethod
+    def loadVideo(parent):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         fileName, _ = QFileDialog.getOpenFileName(parent, "Select a video to run the detector on", "", "Video Files (*.mp4 *.flv *.ts *.mts *.avi)", options=options)
         print(fileName)
         if (fileName):
-            from main import run
-            run(images_dict, lines, video_path=fileName)
+            parent.video_path = fileName
+            GUIUtils.refreshPathLabels(parent)
         else:
             print("videofile invalid!")
 
     @staticmethod
     def setupLineList(parent, lines, target_layout):
+        target_layout.addWidget(QLabel("Counting Line List"), 0, 0)
         from GUI.line_list import LineListWidget
         list_widget = LineListWidget(parent, lines)
         parent.line_list_widget = list_widget
-        target_layout.addWidget(list_widget, 0, 5, 6, 5)
+        target_layout.addWidget(list_widget, 1, 0, 1, 1)
+
+    @staticmethod
+    def setupPathsWidget(parent):
+        path_layout = QGridLayout()
+        path_layout.addWidget(QLabel("Image Path"), 0, 0)
+        parent.label_dict["image_path"] = QLabel(parent.images_dict[SOURCE_IMG_PATH] or "Not specified yet")
+        path_layout.addWidget(parent.label_dict["image_path"], 1, 0)
+
+        button_load_video = QPushButton('Load Video', parent)
+        button_load_video.setToolTip('Select file path to load a video.')
+        button_load_video.clicked.connect(lambda: GUIUtils.loadVideo(parent))
+        parent.buttons_dict[BUTTON_LOAD_VIDEO] = button_load_video
+        path_layout.addWidget(button_load_video, 2, 1)
+
+        parent.label_dict["video_path"] = QLabel(parent.video_path or "Not specified yet")
+        path_layout.addWidget(QLabel("Video Path" ), 2, 0)
+        path_layout.addWidget(parent.label_dict["video_path"], 3, 0)
+
+        return path_layout
+
+    @staticmethod
+    def refreshPathLabels(parent):
+        parent.label_dict['image_path'].setText(parent.images_dict[SOURCE_IMG_PATH] or "Not specified yet")
+        parent.label_dict['video_path'].setText(parent.video_path or "Not specified yet")
 
     @staticmethod
     def refreshImage(parent, images_dict, label_dict, sliders=None):
+        GUIUtils.refreshPathLabels(parent)
         GUIUtils.setupSourceImage(images_dict, label_dict)
         GUIUtils.updateHSVMasking(images_dict, label_dict, sliders=sliders)
         GUIUtils.refreshLines(parent, label_dict, images_dict)

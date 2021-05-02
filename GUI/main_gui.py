@@ -27,13 +27,16 @@ class DisplayImageWidget(QtWidgets.QWidget):
             self.images_dict[key] = None
         self.images_dict["qt_image_size"] = None
         self.images_dict["image_ratio"] = None
+        self.video_path = None
 
         self.label_dict = CustomDict({
             'image_label': QLabel(self),
             'mask_label' : QLabel(self),
             'mask_enhanced_label' : QLabel(self),
             'output_image_label' : QLabel(self),
-            'text_label' : QLabel(self)
+            'text_label' : QLabel(self),
+            'image_path' : None,
+            'video_path': None
         })
         self.main_layout = QHBoxLayout()
         self.layout_dict = CustomDict({
@@ -88,18 +91,20 @@ class DisplayImageWidget(QtWidgets.QWidget):
         self.main_layout.addLayout(second_column)
 
 
-        third_column = QGridLayout()
-        GUIUtils.setupLineList(self, self.lines, third_column)
+        third_column = QVBoxLayout()
+        list_layout = QGridLayout()
+        GUIUtils.setupLineList(self, self.lines, list_layout)
+        third_column.addLayout(list_layout)
+
+        path_layout = GUIUtils.setupPathsWidget(self)
+        third_column.addLayout(path_layout)
+
         self.main_layout.addLayout(third_column)
 
         # setup placeholder image:
         self.images_dict[SOURCE_IMG_PATH] = PLACEHOLDER_IMG_PATH
         GUIUtils.refreshImage(self, self.images_dict, self.label_dict, self.sliders)
 
-        # GUIUtils.setupSourceImage(self.images_dict, self.label_dict)
-        # # Find the pixels that correspond to road
-        # # set lower and upper bounds
-        # GUIUtils.updateHSVMasking(self.images_dict, self.label_dict, self.sliders)
 
 
 def start_GUI():

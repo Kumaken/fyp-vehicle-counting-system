@@ -68,6 +68,7 @@ class VideoFrameGrabber(QAbstractVideoSurface):
         self.widget.update()
 
     def present(self, frame):
+        print("frame is valid?", frame.isValid())
         if frame.isValid():
             cloneFrame = QVideoFrame(frame)
             cloneFrame.map(QAbstractVideoBuffer.ReadOnly)
