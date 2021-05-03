@@ -24,6 +24,6 @@ def draw_roi(frame, mask):
     redImg = np.zeros(frame.shape, frame.dtype)
     redImg[:,:] = (0, 0, 255)
     redMask = cv2.bitwise_and(redImg, redImg, mask=mask)
-    alpha = 0.5
+    alpha = 0.25
     output_frame= cv2.addWeighted(redMask, alpha, frame, 1 - alpha, 0, frame)
     return output_frame

@@ -135,6 +135,12 @@ def run(images_dict, detection_lines, video_path):
     detector_gui = DetectorGUI()
     detector_gui.show()
 
+    # to count FPS:
+    # used to record the time when we processed last frame
+    prev_frame_time = 0
+
+    # used to record the time at which we processed current frame
+    new_frame_time = 0
     try:
         # main loop
         # print("IS STOP? ", stop_detection)
@@ -163,6 +169,20 @@ def run(images_dict, detection_lines, video_path):
             object_counter.count(frame)
             output_frame = object_counter.visualize()
 
+            # Calculating the fps
+            new_frame_time = time.time()
+            # fps will be number of frame processed in given time frame
+            # since their will be most of time error of 0.001 second
+            # we will be subtracting it to get more accurate result
+            fps = 1/(new_frame_time-prev_frame_time)
+            prev_frame_time = new_frame_time
+
+            # converting the fps into integer
+            fps = str(fps)
+
+            # puting the FPS count on the frame
+            cv2.putText(frame, "FPS:"+fps, (settings.DEBUG_WINDOW_SIZE[0], 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 1, cv2.LINE_AA)
+
             if record:
                 output_video.write(output_frame)
 
@@ -182,6 +202,10 @@ def run(images_dict, detection_lines, video_path):
                     'percentage_processed': round((frames_processed / frames_count) * 100, 2),
                 },
             })
+
+
+
+
 
             retval, frame = cap.read()
     finally:

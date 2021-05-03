@@ -18,7 +18,13 @@ from GUI.utils import Utils
 logger = get_logger()
 NUM_CORES = multiprocessing.cpu_count()
 
+# SETUP CLASS NAMES
+import settings
+with open(settings.YOLO_CLASSES_PATH, 'r') as classes_file:
+    CLASSES = dict(enumerate([line.strip() for line in classes_file.readlines()]))
+
 class ObjectCounter():
+    line_colors = [(255, 129, 61), (255, 255, 20), (98, 255, 20), (20, 255, 224), (20, 157, 255), (0, 26, 255), (64, 0, 255), (157, 0, 255), (255, 0, 247), (255, 0, 38), (255, 255, 255), (0, 0, 0)]
 
     def __init__(self, initial_frame, detector, tracker, droi, show_droi, mcdf, mctf, di, counting_lines, show_counts, hud_color):
         self.frame = initial_frame # current frame of video
@@ -85,6 +91,14 @@ class ObjectCounter():
 
         self.frame_count += 1
 
+    def object_color_picker(self, label):
+        colors = [(255, 129, 61), (255, 255, 20), (98, 255, 20), (20, 255, 224)]
+        for i in range (len(CLASSES)):
+            if label == CLASSES[i]:
+                return colors[i]
+        return (255,255,255)
+
+
     def visualize(self):
         frame = self.frame
         font = cv2.FONT_HERSHEY_DUPLEX
@@ -96,14 +110,14 @@ class ObjectCounter():
             cv2.rectangle(frame, (x, y), (x + w, y + h), self.hud_color, 2)
             object_label = 'I: ' + _id[:8] \
                             if blob.type is None \
-                            else 'I: {0}, T: {1} ({2})'.format(_id[:8], blob.type, str(blob.type_confidence)[:4])
-            cv2.putText(frame, object_label, (x, y - 5), font, 1, self.hud_color, 2, line_type)
+                            else 'ID:{0}; Type:{1}; Conf:({2})'.format(_id[:8], blob.type, str(blob.type_confidence)[:4])
+            cv2.putText(frame, object_label, (x, y - 5), font, 1, self.object_color_picker(blob.type), 2, line_type)
 
         # draw counting lines
-        for counting_line in self.counting_lines:
-            cv2.line(frame, counting_line['line'][0], counting_line['line'][1], self.hud_color, 3)
+        for i, counting_line in enumerate(self.counting_lines):
+            cv2.line(frame, counting_line['line'][0], counting_line['line'][1], self.line_colors[i % len(self.line_colors)], 3)
             cl_label_origin = (counting_line['line'][0][0], counting_line['line'][0][1] + 35)
-            cv2.putText(frame, counting_line['label'], cl_label_origin, font, 1, self.hud_color, 2, line_type)
+            cv2.putText(frame, counting_line['label'], cl_label_origin, font, 1, self.line_colors[i % len(self.line_colors)], 2, line_type)
 
         # show detection roi
         # CHANGE
@@ -113,11 +127,13 @@ class ObjectCounter():
         # show counts
         if self.show_counts:
             offset = 1
+            i = 0
             for line, objects in self.counts.items():
-                cv2.putText(frame, line, (10, 40 * offset), font, 1, self.hud_color, 2, line_type)
+                cv2.putText(frame, line, (10, 40 * offset), font, 1, self.line_colors[i % len(self.line_colors)], 2, line_type)
                 for label, count in objects.items():
                     offset += 1
-                    cv2.putText(frame, "{}: {}".format(label, count), (10, 40 * offset), font, 1, self.hud_color, 2, line_type)
+                    cv2.putText(frame, "{}: {}".format(label, count), (10, 40 * offset), font, 1, self.line_colors[i % len(self.line_colors)], 2, line_type)
                 offset += 2
+                i += 1
 
         return frame

@@ -11,7 +11,7 @@ from PyQt5.QtCore import Qt, QDir
 # import custom modules:
 from GUI.sliders import Sliders
 from GUI.utils import Utils
-from GUI.const import BUTTON_OPEN_IMG, BUTTON_SAVE_IMG, BUTTON_SAVE_CONFIG, BUTTON_CAPTURE_IMG, BUTTON_LOAD_CONFIG, BUTTON_START_DETECTION, SOURCE_IMG_PATH, OUTPUT_IMG_CV2, OUTPUT_IMG_QT, MASK_IMG_CV2, SLIDER_LABELS, CSV_CONFIG_KEYS, SOURCE_IMG_CV2, PLACEHOLDER_IMG_PATH, BUTTON_LOAD_VIDEO
+from GUI.const import BUTTON_OPEN_IMG, BUTTON_SAVE_IMG, BUTTON_SAVE_CONFIG, BUTTON_CAPTURE_IMG, BUTTON_LOAD_CONFIG, BUTTON_START_DETECTION, SOURCE_IMG_PATH, OUTPUT_IMG_CV2, OUTPUT_IMG_QT, MASK_IMG_CV2, SLIDER_LABELS, CSV_CONFIG_KEYS, SOURCE_IMG_CV2, PLACEHOLDER_IMG_PATH, BUTTON_LOAD_VIDEO, SOURCE_VIDEO_PATH
 from GUI.video_player import VideoPlayer
 
 class GUIUtils:
@@ -86,7 +86,7 @@ class GUIUtils:
 
         # prepare output label:
         label_dict.output_image_label.mousePressEvent = lambda event: GUIUtils.getClickPositionOnImage(event, label_dict, image_dict, parent)
-        image_layout.addWidget(QLabel("Output Image"), 2, 0)
+        image_layout.addWidget(QLabel("Output Image (Click at two different points to create a COUNTING LINE!)"), 2, 0, 1, 3)
         image_layout.addWidget(label_dict.output_image_label, 3, 0, 3, 3)
         # image_layout.addWidget(label_dict.output_image_label, 3, 0, 1, 2, Qt.AlignCenter)
 
@@ -188,7 +188,7 @@ class GUIUtils:
 
         button_save_config = QPushButton('Save Mask Config', parent)
         button_save_config.setToolTip('Select file path to save the sliders config into.')
-        button_save_config.clicked.connect(lambda: GUIUtils.save_HSV_config_csv(sliders, images_dict, parent.lines))
+        button_save_config.clicked.connect(lambda: GUIUtils.save_HSV_config_csv(parent, sliders, images_dict, parent.lines))
         buttons_dict[BUTTON_SAVE_CONFIG] = button_save_config
         buttons_layout.addWidget(button_save_config, 2, 4)
 
@@ -301,7 +301,7 @@ class GUIUtils:
         # print(fileName)
 
     @staticmethod
-    def save_HSV_config_csv(sliders, images_dict, lines):
+    def save_HSV_config_csv(parent, sliders, images_dict, lines):
         dialog = QFileDialog()
         dialog.setFilter(dialog.filter() | QDir.Hidden)
         dialog.setDefaultSuffix("csv")
@@ -314,6 +314,7 @@ class GUIUtils:
                 writer = csv.writer(f, delimiter=',')
                 writer.writerow(CSV_CONFIG_KEYS)
                 writer.writerow([SOURCE_IMG_PATH, images_dict[SOURCE_IMG_PATH]])
+                writer.writerow([SOURCE_VIDEO_PATH, parent.video_path])
                 for i in range(len(sliders)):
                     writer.writerow([SLIDER_LABELS[i], sliders[i].getSliderValue()])
             with open(fileName+'.pickle', 'wb') as handle:
@@ -334,7 +335,9 @@ class GUIUtils:
                 for row in reader:
                     config_dict[row[CSV_CONFIG_KEYS[0]]] = row[CSV_CONFIG_KEYS[1]]
 
+                # setup paths
                 images_dict[SOURCE_IMG_PATH] = config_dict[SOURCE_IMG_PATH]
+                parent.video_path = config_dict[SOURCE_VIDEO_PATH]
                 for i,label in enumerate(SLIDER_LABELS):
                     sliders[i].setSliderValue(int(config_dict[label]))
             print(fileName)

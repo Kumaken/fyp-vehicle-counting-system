@@ -8,3 +8,4 @@ data/*
 # envi folders
 ivyenv
 .ivyenv2
+.venv
