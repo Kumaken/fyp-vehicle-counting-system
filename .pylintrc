@@ -573,3 +573,9 @@ min-public-methods=2
 # "BaseException, Exception".
 overgeneral-exceptions=BaseException,
                        Exception
+
+
+
+# ADDITION:
+# Prevent pylint from throwing erros on pyqt5 imports:
+extension-pkg-whitelist=PyQt5, cv2

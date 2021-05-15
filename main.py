@@ -44,7 +44,7 @@ def stop():
     stop_detection = True
     logger.info('Loop stopped.', extra={'meta': {'label': 'STOP_LOOP'}})
 
-def run(images_dict, detection_lines, video_path):
+def run(images_dict, detection_lines, video_path, weight_path, cfg_path):
     '''
     Initialize object counter class and run counting loop.
     '''
@@ -54,11 +54,14 @@ def run(images_dict, detection_lines, video_path):
     is_paused = False
     output_frame = None
 
+    import settings
+    settings.YOLO_WEIGHTS_PATH = weight_path
+    settings.YOLO_CONFIG_PATH = cfg_path
     # SET ENV VARIABLES (DETECTION LINES)
     print("[DEBUG][run] Detection lines:", detection_lines)
     settings.COUNTING_LINES = detection_lines
 
-    print("[DEBUG][run] Setup video:", video_path)
+    print("[DEBUG][run] Setup video:", video_path, weight_path, cfg_path)
     video = video_path
     cap = cv2.VideoCapture(video)
     if not cap.isOpened():
@@ -166,7 +169,7 @@ def run(images_dict, detection_lines, video_path):
             _timer = cv2.getTickCount() # set timer to calculate processing frame rate
 
             # OBJECT COUNTER STARTS:
-            object_counter.count(frame)
+            object_counter.count(frame) # bottleneck is here
             output_frame = object_counter.visualize()
 
             # Calculating the fps
@@ -183,28 +186,26 @@ def run(images_dict, detection_lines, video_path):
             # puting the FPS count on the frame
             cv2.putText(frame, "FPS:"+fps, (settings.DEBUG_WINDOW_SIZE[0], 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 1, cv2.LINE_AA)
 
-            if record:
-                output_video.write(output_frame)
+            # if record:
+            #     output_video.write(output_frame)
 
             if not headless:
                 debug_window_size = settings.DEBUG_WINDOW_SIZE
+                # resized_frame = cv2.resize(frame, debug_window_size)
                 resized_frame = cv2.resize(output_frame, debug_window_size)
                 cv2.imshow(window_name, resized_frame)
 
-            processing_frame_rate = round(cv2.getTickFrequency() / (cv2.getTickCount() - _timer), 2)
+            # processing_frame_rate = round(cv2.getTickFrequency() / (cv2.getTickCount() - _timer), 2)
             frames_processed += 1
-            logger.debug('Frame processed.', extra={
-                'meta': {
-                    'label': 'FRAME_PROCESS',
-                    'frames_processed': frames_processed,
-                    'frame_rate': processing_frame_rate,
-                    'frames_left': frames_count - frames_processed,
-                    'percentage_processed': round((frames_processed / frames_count) * 100, 2),
-                },
-            })
-
-
-
+            # logger.debug('Frame processed.', extra={
+            #     'meta': {
+            #         'label': 'FRAME_PROCESS',
+            #         'frames_processed': frames_processed,
+            #         'frame_rate': processing_frame_rate,
+            #         'frames_left': frames_count - frames_processed,
+            #         'percentage_processed': round((frames_processed / frames_count) * 100, 2),
+            #     },
+            # })
 
 
             retval, frame = cap.read()

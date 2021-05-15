@@ -92,16 +92,16 @@ def add_new_blobs(boxes, classes, confidences, blobs, frame, tracker, mcdf):
             blob_id = generate_object_id()
             blobs[blob_id] = _blob
 
-            blog_create_log_meta = {
-                'label': 'BLOB_CREATE',
-                'object_id': blob_id,
-                'bounding_box': _blob.bounding_box,
-                'type': _blob.type,
-                'type_confidence': _blob.type_confidence,
-            }
-            if settings.LOG_IMAGES:
-                blog_create_log_meta['image'] = get_base64_image(get_box_image(frame, _blob.bounding_box))
-            logger.debug('Blob created.', extra={'meta': blog_create_log_meta})
+            # blog_create_log_meta = {
+            #     'label': 'BLOB_CREATE',
+            #     'object_id': blob_id,
+            #     'bounding_box': _blob.bounding_box,
+            #     'type': _blob.type,
+            #     'type_confidence': _blob.type_confidence,
+            # }
+            # if settings.LOG_IMAGES:
+            #     blog_create_log_meta['image'] = get_base64_image(get_box_image(frame, _blob.bounding_box))
+            # logger.debug('Blob created.', extra={'meta': blog_create_log_meta})
 
     blobs = _remove_stray_blobs(blobs, matched_blob_ids, mcdf)
     return blobs
@@ -127,14 +127,14 @@ def update_blob_tracker(blob, blob_id, frame):
     if success:
         blob.num_consecutive_tracking_failures = 0
         blob.update(box)
-        logger.debug('Object tracker updated.', extra={
-            'meta': {
-                'label': 'TRACKER_UPDATE',
-                'object_id': blob_id,
-                'bounding_box': blob.bounding_box,
-                'centroid': blob.centroid,
-            },
-        })
+        # logger.debug('Object tracker updated.', extra={
+        #     'meta': {
+        #         'label': 'TRACKER_UPDATE',
+        #         'object_id': blob_id,
+        #         'bounding_box': blob.bounding_box,
+        #         'centroid': blob.centroid,
+        #     },
+        # })
     else:
         blob.num_consecutive_tracking_failures += 1
 

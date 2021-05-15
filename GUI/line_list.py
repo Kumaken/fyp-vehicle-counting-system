@@ -8,8 +8,8 @@ class LineListWidget(QListWidget):
         super(LineListWidget,self).__init__()
         self.parent = parent
 
-    def clicked(self, item):
-        QMessageBox.information(self, "ListWidget", "ListWidget: " + item.text())
+    # def clicked(self, item):
+    #     QMessageBox.information(self, "ListWidget", "ListWidget: " + item.text())
 
     def deleteItem(self, item):
         from GUI.gui_utils import GUIUtils
@@ -78,12 +78,12 @@ class LineListWidget(QListWidget):
 
 
     def setupList(self):
-        print("Setup List!", self.parent.lines)
+        # print("Setup List!", self.parent.lines)
         self.clear()
         for line_entry in self.parent.lines:
             self.createLineEntry(line_entry['label'])
             # self.addItem(line_entry['label'])
-        self.itemClicked.connect(self.clicked)
+        # self.itemClicked.connect(self.clicked)
         self.setMinimumWidth(self.sizeHintForColumn(0))
 
 

@@ -78,11 +78,11 @@ class VideoPlayer(QWidget):
     def closeEvent(self, event):
         from GUI.gui_utils import GUIUtils
         print("Close event of video player is called!")
-        GUIUtils.refreshImage(self.main_window, self.main_window.images_dict, self.main_window.label_dict)
+        # GUIUtils.refreshImage(self.main_window, self.main_window.images_dict, self.main_window.label_dict)
 
     def abrir(self):
         fileName, _ = QFileDialog.getOpenFileName(self, "Select a video",
-                ".", "Video Files (*.mp4 *.flv *.ts *.mts *.avi)")
+                ".", "Video Files (*.mp4 *.mkv *.flv *.ts *.mts *.avi)")
 
         if fileName != '':
             self.mediaPlayer.setMedia(

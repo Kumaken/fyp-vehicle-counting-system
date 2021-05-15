@@ -11,13 +11,20 @@ from PyQt5.QtCore import Qt, QDir
 # import custom modules:
 from GUI.sliders import Sliders
 from GUI.utils import Utils
-from GUI.const import BUTTON_OPEN_IMG, BUTTON_SAVE_IMG, BUTTON_SAVE_CONFIG, BUTTON_CAPTURE_IMG, BUTTON_LOAD_CONFIG, BUTTON_START_DETECTION, SOURCE_IMG_PATH, OUTPUT_IMG_CV2, OUTPUT_IMG_QT, MASK_IMG_CV2, SLIDER_LABELS, CSV_CONFIG_KEYS, SOURCE_IMG_CV2, PLACEHOLDER_IMG_PATH, BUTTON_LOAD_VIDEO, SOURCE_VIDEO_PATH
+from GUI.const import BUTTON_OPEN_IMG, BUTTON_SAVE_IMG, BUTTON_SAVE_CONFIG, BUTTON_CAPTURE_IMG, BUTTON_LOAD_CONFIG, BUTTON_START_DETECTION, SOURCE_IMG_PATH, OUTPUT_IMG_CV2, OUTPUT_IMG_QT, MASK_IMG_CV2, SLIDER_LABELS, CSV_CONFIG_KEYS, SOURCE_IMG_CV2, PLACEHOLDER_IMG_PATH, BUTTON_LOAD_VIDEO, SOURCE_VIDEO_PATH, YOLO_CONFIG_PATH, YOLO_WEIGHT_PATH
 from GUI.video_player import VideoPlayer
 
 class GUIUtils:
     # static variable
     drawing_line_mode = False
     line = []
+
+    @staticmethod
+    def createButton(parent, text, tooltip_text, callback):
+        button = QPushButton(text, parent)
+        button.setToolTip(tooltip_text)
+        button.clicked.connect(callback)
+        return button
 
     @staticmethod
     def getClickPositionOnImage(event, label_dict, images_dict, parent):
@@ -59,7 +66,7 @@ class GUIUtils:
         image = copy.deepcopy(images_dict[OUTPUT_IMG_CV2])
         for line_entry in parent.lines:
             point1, point2 = line_entry['line']
-            print("Drawing line between: ", point1, point2)
+            # print("Drawing line between: ", point1, point2)
             cv2.line(image, point1, point2, [0, 0, 255], 10)
         return image
 
@@ -108,15 +115,15 @@ class GUIUtils:
             qt_output_img = Utils.convert_cv_qt(images_dict[SOURCE_IMG_CV2], multiplier=3)
             # set qt image size
             images_dict["qt_image_size"] = {"width": qt_output_img.width(), "height": qt_output_img.height()}
-            print("IMAGES_DICT QT_IMAGE_SIZE", images_dict["qt_image_size"])
+            # print("IMAGES_DICT QT_IMAGE_SIZE", images_dict["qt_image_size"])
             # set qt image ratio for conversion back to cv2 size
             og_width, og_height  = images_dict[SOURCE_IMG_CV2].shape[1::-1]
             ratio_h, ratio_w = og_height/images_dict["qt_image_size"]["height"], og_width/images_dict["qt_image_size"]["width"]
-            print("OG:", og_width, og_height)
-            print("Scaled: ", images_dict["qt_image_size"])
+            # print("OG:", og_width, og_height)
+            # print("Scaled: ", images_dict["qt_image_size"])
             images_dict["image_ratio"] = {"width" : ratio_w, "height": ratio_h}
 
-            print("IMAGES DICT:", images_dict["image_ratio"])
+            # print("IMAGES DICT:", images_dict["image_ratio"])
 
             label_dict.image_label.setPixmap(qt_src_image)
             label_dict.output_image_label.setPixmap(qt_output_img)
@@ -137,7 +144,8 @@ class GUIUtils:
                 lower = np.array([sliders[0].getSliderValue(), sliders[1].getSliderValue(), sliders[2].getSliderValue()], dtype="uint8")
                 upper = np.array([sliders[3].getSliderValue(), sliders[4].getSliderValue(), sliders[5].getSliderValue()], dtype="uint8")
 
-            cv_hsv_mask = cv2.inRange(images_dict[SOURCE_IMG_CV2], lower, upper)
+            hsv_img = cv2.cvtColor(images_dict[SOURCE_IMG_CV2], cv2.COLOR_BGR2HSV)
+            cv_hsv_mask = cv2.inRange(hsv_img, lower, upper)
             qt_hsv_mask = Utils.convert_cv_qt(cv_hsv_mask)
 
             # update image
@@ -208,7 +216,7 @@ class GUIUtils:
         else:
             options = QFileDialog.Options()
             options |= QFileDialog.DontUseNativeDialog
-            fileName, _ = QFileDialog.getOpenFileName(parent, "Select a video to run the detector on", "", "Video Files (*.mp4 *.flv *.ts *.mts *.avi)", options=options)
+            fileName, _ = QFileDialog.getOpenFileName(parent, "Select a video to run the detector on", "", "Video Files (*.mp4 *.mkv *.flv *.ts *.mts *.avi)", options=options)
             print(fileName)
             if (fileName):
                 video_path = fileName
@@ -217,19 +225,30 @@ class GUIUtils:
                 return
 
         from main import run
-        run(images_dict, lines, video_path=video_path)
+        run(images_dict, lines, video_path=video_path, weight_path=parent.weight_path, cfg_path=parent.cfg_path)
 
     @staticmethod
     def loadVideo(parent):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        fileName, _ = QFileDialog.getOpenFileName(parent, "Select a video to run the detector on", "", "Video Files (*.mp4 *.flv *.ts *.mts *.avi)", options=options)
+        fileName, _ = QFileDialog.getOpenFileName(parent, "Select a video to run the detector on", "", "Video Files (*.mp4 *.mkv *.flv *.ts *.mts *.avi)", options=options)
         print(fileName)
         if (fileName):
             parent.video_path = fileName
             GUIUtils.refreshPathLabels(parent)
         else:
             print("videofile invalid!")
+
+    @staticmethod
+    def selectFileDialog(parent, text, ext_filter):
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        fileName, _ = QFileDialog.getOpenFileName(parent, text, "", ext_filter, options=options)
+        print(fileName)
+        if (fileName):
+           return fileName
+        print("selected file is invalid!")
+        return None
 
     @staticmethod
     def setupLineList(parent, lines, target_layout):
@@ -246,6 +265,7 @@ class GUIUtils:
         parent.label_dict["image_path"] = QLabel(parent.images_dict[SOURCE_IMG_PATH] or "Not specified yet")
         path_layout.addWidget(parent.label_dict["image_path"], 1, 0)
 
+        # VIDEO:
         button_load_video = QPushButton('Load Video', parent)
         button_load_video.setToolTip('Select file path to load a video.')
         button_load_video.clicked.connect(lambda: GUIUtils.loadVideo(parent))
@@ -315,6 +335,9 @@ class GUIUtils:
                 writer.writerow(CSV_CONFIG_KEYS)
                 writer.writerow([SOURCE_IMG_PATH, images_dict[SOURCE_IMG_PATH]])
                 writer.writerow([SOURCE_VIDEO_PATH, parent.video_path])
+                writer.writerow([YOLO_WEIGHT_PATH, parent.weight_path])
+                writer.writerow([YOLO_CONFIG_PATH, parent.config_path])
+
                 for i in range(len(sliders)):
                     writer.writerow([SLIDER_LABELS[i], sliders[i].getSliderValue()])
             with open(fileName+'.pickle', 'wb') as handle:
@@ -338,6 +361,8 @@ class GUIUtils:
                 # setup paths
                 images_dict[SOURCE_IMG_PATH] = config_dict[SOURCE_IMG_PATH]
                 parent.video_path = config_dict[SOURCE_VIDEO_PATH]
+                parent.weight_path = config_dict[YOLO_WEIGHT_PATH]
+                parent.config_path = config_dict[YOLO_CONFIG_PATH]
                 for i,label in enumerate(SLIDER_LABELS):
                     sliders[i].setSliderValue(int(config_dict[label]))
             print(fileName)

@@ -9,7 +9,7 @@ class Sliders(QWidget):
 
 
         self.sl = QSlider(Qt.Horizontal)
-        self.sl.setMinimum(1)
+        self.sl.setMinimum(0)
         self.sl.setMaximum(255)
         self.sl.setValue(slider_val)
         self.sl.setFocusPolicy(Qt.StrongFocus)
@@ -34,7 +34,7 @@ class Sliders(QWidget):
     def valuechange(self, value):
         #self.size = self.sl.value()
         # self.__init__(value)
-        print("value changes detected")
+        # print("value changes detected")
         self.l1.setText("Value: " + str(self.sl.value()));
         #return self.size
 

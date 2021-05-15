@@ -16,6 +16,7 @@ from GUI.custom_dict import CustomDict
 from GUI.const import BUTTON_OPEN_IMG, BUTTON_SAVE_IMG, BUTTON_CAPTURE_IMG, SOURCE_IMG_PATH,IMAGE_DICT_KEYS, OUTPUT_IMG_QT, PLACEHOLDER_IMG_PATH
 from GUI.video_player import VideoPlayer
 
+from GUI.components.path_widget import PathWidget
 class DisplayImageWidget(QtWidgets.QWidget):
 
     def __init__(self, parent=None):
@@ -49,6 +50,8 @@ class DisplayImageWidget(QtWidgets.QWidget):
             BUTTON_CAPTURE_IMG: None
         })
         self.line_list_widget = None
+        self.weight_path = None
+        self.cfg_path = None
 
         # SET
         self.setup_GUI()
@@ -96,8 +99,7 @@ class DisplayImageWidget(QtWidgets.QWidget):
         GUIUtils.setupLineList(self, self.lines, list_layout)
         third_column.addLayout(list_layout)
 
-        path_layout = GUIUtils.setupPathsWidget(self)
-        third_column.addLayout(path_layout)
+        third_column.addLayout(PathWidget(self).setup().getLayout())
 
         self.main_layout.addLayout(third_column)
 
@@ -105,7 +107,29 @@ class DisplayImageWidget(QtWidgets.QWidget):
         self.images_dict[SOURCE_IMG_PATH] = PLACEHOLDER_IMG_PATH
         GUIUtils.refreshImage(self, self.images_dict, self.label_dict, self.sliders)
 
+    # setters
+    def setWeight(self, weight_path):
+        self.weight_path = weight_path
 
+    def setCFG(self, cfg_path):
+        self.cfg_path = cfg_path
+
+
+    # getters:
+    def getSourceImagePath(self):
+        return self.images_dict[SOURCE_IMG_PATH]
+
+    def getVideoPath(self):
+        return self.video_path
+
+    def getWeightPath(self):
+        return self.weight_path
+
+    def getCFGPath(self):
+        return self.cfg_path
+
+    def getLabelDict(self):
+        return self.label_dict
 
 def start_GUI():
     app = QtWidgets.QApplication(sys.argv)

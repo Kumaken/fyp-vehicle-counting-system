@@ -21,3 +21,13 @@ CSV_CONFIG_KEYS = ['key' , 'value']
 
 # PLACEHOLDER IMAGE PATH:
 PLACEHOLDER_IMG_PATH = "GUI/images/placeholder.jpg"
+
+# YOLO CONFIGS
+YOLO_WEIGHT_PATH = "YOLO_WEIGHT_PATH"
+YOLO_CONFIG_PATH = "YOLO_CONFIG_PATH"
+
+# Various labels:
+VIDEO_PATH_LABEL = "video_path"
+IMAGE_PATH_LABEL = "image_path"
+WEIGHT_PATH_LABEL = "weight_path"
+CFG_PATH_LABEL = "cfg_path"

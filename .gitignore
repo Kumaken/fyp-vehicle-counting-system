@@ -9,3 +9,7 @@ data/*
 ivyenv
 .ivyenv2
 .venv
+
+#opencv stuffs
+opencv
+opencv_contrib

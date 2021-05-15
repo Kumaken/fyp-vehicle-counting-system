@@ -17,7 +17,7 @@ from counter import attempt_count
 from GUI.utils import Utils
 logger = get_logger()
 NUM_CORES = multiprocessing.cpu_count()
-
+print("[DEBUG][ObjectCounter] NUM_CORES:", NUM_CORES)
 # SETUP CLASS NAMES
 import settings
 with open(settings.YOLO_CLASSES_PATH, 'r') as classes_file:
@@ -106,18 +106,20 @@ class ObjectCounter():
 
         # draw and label blob bounding boxes
         for _id, blob in self.blobs.items():
+            color = self.object_color_picker(blob.type)
             (x, y, w, h) = [int(v) for v in blob.bounding_box]
-            cv2.rectangle(frame, (x, y), (x + w, y + h), self.hud_color, 2)
+            cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
             object_label = 'I: ' + _id[:8] \
                             if blob.type is None \
                             else 'ID:{0}; Type:{1}; Conf:({2})'.format(_id[:8], blob.type, str(blob.type_confidence)[:4])
-            cv2.putText(frame, object_label, (x, y - 5), font, 1, self.object_color_picker(blob.type), 2, line_type)
+            cv2.putText(frame, object_label, (x, y - 5), font, 1, color, 2, line_type)
 
         # draw counting lines
         for i, counting_line in enumerate(self.counting_lines):
-            cv2.line(frame, counting_line['line'][0], counting_line['line'][1], self.line_colors[i % len(self.line_colors)], 3)
+            color_idx = i % len(self.line_colors)
+            cv2.line(frame, counting_line['line'][0], counting_line['line'][1], self.line_colors[color_idx], 3)
             cl_label_origin = (counting_line['line'][0][0], counting_line['line'][0][1] + 35)
-            cv2.putText(frame, counting_line['label'], cl_label_origin, font, 1, self.line_colors[i % len(self.line_colors)], 2, line_type)
+            cv2.putText(frame, counting_line['label'], cl_label_origin, font, 1, self.line_colors[color_idx], 2, line_type)
 
         # show detection roi
         # CHANGE
@@ -129,10 +131,11 @@ class ObjectCounter():
             offset = 1
             i = 0
             for line, objects in self.counts.items():
-                cv2.putText(frame, line, (10, 40 * offset), font, 1, self.line_colors[i % len(self.line_colors)], 2, line_type)
+                color_idx = i % len(self.line_colors)
+                cv2.putText(frame, line, (10, 40 * offset), font, 1, self.line_colors[color_idx], 2, line_type)
                 for label, count in objects.items():
                     offset += 1
-                    cv2.putText(frame, "{}: {}".format(label, count), (10, 40 * offset), font, 1, self.line_colors[i % len(self.line_colors)], 2, line_type)
+                    cv2.putText(frame, "{}: {}".format(label, count), (10, 40 * offset), font, 1, self.line_colors[color_idx], 2, line_type)
                 offset += 2
                 i += 1
 

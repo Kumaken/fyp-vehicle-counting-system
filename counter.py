@@ -81,15 +81,15 @@ def attempt_count(blob, blob_id, counting_lines, counts):
 
             blob.lines_crossed.append(label)
 
-            logger.info('Object counted.', extra={
-                'meta': {
-                    'label': 'OBJECT_COUNT',
-                    'id': blob_id,
-                    'type': blob.type,
-                    'counting_line': label,
-                    'position_first_detected': blob.position_first_detected,
-                    'position_counted': blob.centroid,
-                    'counted_at':time.time(),
-                },
-            })
+            # logger.info('Object counted.', extra={
+            #     'meta': {
+            #         'label': 'OBJECT_COUNT',
+            #         'id': blob_id,
+            #         'type': blob.type,
+            #         'counting_line': label,
+            #         'position_first_detected': blob.position_first_detected,
+            #         'position_counted': blob.centroid,
+            #         'counted_at':time.time(),
+            #     },
+            # })
     return blob, counts

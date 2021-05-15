@@ -23,7 +23,12 @@ with open(settings.YOLO_CLASSES_OF_INTEREST_PATH, 'r') as coi_file:
 conf_threshold = settings.YOLO_CONFIDENCE_THRESHOLD
 
 # READ YOLO NET with cv2 deep neural network module
+print("[DEBUG][Reading Net with setup:]",settings.YOLO_WEIGHTS_PATH, settings.YOLO_CONFIG_PATH)
 net = cv2.dnn.readNet(settings.YOLO_WEIGHTS_PATH, settings.YOLO_CONFIG_PATH)
+# USE GPU
+net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA);
+net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA);
+
 layer_names = net.getLayerNames()
 output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 print("output_layers", output_layers)
@@ -69,6 +74,7 @@ def get_bounding_boxes(image):
 
     for output in outputs:
         for detection in output:
+            conf_threshold_ = conf_threshold
             scores = detection[5:]
             if(len(scores) == 0):
                 continue
@@ -77,14 +83,16 @@ def get_bounding_boxes(image):
             confidence = scores[class_id]
             if((class_id == 3 or class_id == 0) and confidence != 0):
                 print(CLASSES[class_id], confidence)
+                conf_threshold_ = 0.2
+
             # if confidence > conf_threshold and CLASSES[class_id] in CLASSES_OF_INTEREST:
-            if confidence > conf_threshold:
+            if confidence > conf_threshold_:
                 center_x = int(detection[0] * width)
                 center_y = int(detection[1] * height)
                 w = int(detection[2] * width)
                 h = int(detection[3] * height)
-                x = center_x - w / 2
-                y = center_y - h / 2
+                x = int(center_x - w / 2)
+                y = int(center_y - h / 2)
                 classes.append(CLASSES[class_id])
                 confidences.append(float(confidence))
                 boxes.append([x, y, w, h])
