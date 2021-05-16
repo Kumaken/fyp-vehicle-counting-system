@@ -23,7 +23,7 @@ with open(settings.YOLO_CLASSES_OF_INTEREST_PATH, 'r') as coi_file:
 conf_threshold = settings.YOLO_CONFIDENCE_THRESHOLD
 
 # READ YOLO NET with cv2 deep neural network module
-print("[DEBUG][Reading Net with setup:]",settings.YOLO_WEIGHTS_PATH, settings.YOLO_CONFIG_PATH)
+print("[DEBUG][Reading Net with setup:]", settings.YOLO_WEIGHTS_PATH, settings.YOLO_CONFIG_PATH)
 net = cv2.dnn.readNet(settings.YOLO_WEIGHTS_PATH, settings.YOLO_CONFIG_PATH)
 # USE GPU
 net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA);

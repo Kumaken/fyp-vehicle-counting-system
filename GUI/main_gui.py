@@ -53,6 +53,9 @@ class DisplayImageWidget(QtWidgets.QWidget):
         self.weight_path = None
         self.cfg_path = None
 
+        # widgets
+        self.path_widget = None
+
         # SET
         self.setup_GUI()
 
@@ -99,7 +102,8 @@ class DisplayImageWidget(QtWidgets.QWidget):
         GUIUtils.setupLineList(self, self.lines, list_layout)
         third_column.addLayout(list_layout)
 
-        third_column.addLayout(PathWidget(self).setup().getLayout())
+        self.path_widget = PathWidget(self)
+        third_column.addLayout(self.path_widget.setup().getLayout())
 
         self.main_layout.addLayout(third_column)
 
@@ -130,6 +134,9 @@ class DisplayImageWidget(QtWidgets.QWidget):
 
     def getLabelDict(self):
         return self.label_dict
+
+    def getPathWidget(self):
+        return self.path_widget
 
 def start_GUI():
     app = QtWidgets.QApplication(sys.argv)

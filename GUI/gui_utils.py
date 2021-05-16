@@ -225,7 +225,7 @@ class GUIUtils:
                 return
 
         from main import run
-        run(images_dict, lines, video_path=video_path, weight_path=parent.weight_path, cfg_path=parent.cfg_path)
+        run(images_dict, lines, video_path=video_path, weight_path=parent.getWeightPath(), cfg_path=parent.getCFGPath())
 
     @staticmethod
     def loadVideo(parent):
@@ -279,13 +279,8 @@ class GUIUtils:
         return path_layout
 
     @staticmethod
-    def refreshPathLabels(parent):
-        parent.label_dict['image_path'].setText(parent.images_dict[SOURCE_IMG_PATH] or "Not specified yet")
-        parent.label_dict['video_path'].setText(parent.video_path or "Not specified yet")
-
-    @staticmethod
     def refreshImage(parent, images_dict, label_dict, sliders=None):
-        GUIUtils.refreshPathLabels(parent)
+        parent.getPathWidget().refreshLabels()
         GUIUtils.setupSourceImage(images_dict, label_dict)
         GUIUtils.updateHSVMasking(images_dict, label_dict, sliders=sliders)
         GUIUtils.refreshLines(parent, label_dict, images_dict)
@@ -335,8 +330,8 @@ class GUIUtils:
                 writer.writerow(CSV_CONFIG_KEYS)
                 writer.writerow([SOURCE_IMG_PATH, images_dict[SOURCE_IMG_PATH]])
                 writer.writerow([SOURCE_VIDEO_PATH, parent.video_path])
-                writer.writerow([YOLO_WEIGHT_PATH, parent.weight_path])
-                writer.writerow([YOLO_CONFIG_PATH, parent.config_path])
+                writer.writerow([YOLO_WEIGHT_PATH, parent.getWeightPath()])
+                writer.writerow([YOLO_CONFIG_PATH, parent.getCFGPath()])
 
                 for i in range(len(sliders)):
                     writer.writerow([SLIDER_LABELS[i], sliders[i].getSliderValue()])
@@ -361,8 +356,9 @@ class GUIUtils:
                 # setup paths
                 images_dict[SOURCE_IMG_PATH] = config_dict[SOURCE_IMG_PATH]
                 parent.video_path = config_dict[SOURCE_VIDEO_PATH]
-                parent.weight_path = config_dict[YOLO_WEIGHT_PATH]
-                parent.config_path = config_dict[YOLO_CONFIG_PATH]
+                parent.weight_path = config_dict.get( YOLO_WEIGHT_PATH, None)
+                parent.cfg_path = config_dict.get( YOLO_CONFIG_PATH, None)
+
                 for i,label in enumerate(SLIDER_LABELS):
                     sliders[i].setSliderValue(int(config_dict[label]))
             print(fileName)
