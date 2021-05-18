@@ -31,3 +31,6 @@ VIDEO_PATH_LABEL = "video_path"
 IMAGE_PATH_LABEL = "image_path"
 WEIGHT_PATH_LABEL = "weight_path"
 CFG_PATH_LABEL = "cfg_path"
+
+# Tracker:
+CHOSEN_TRACKER = "CHOSEN_TRACKER"

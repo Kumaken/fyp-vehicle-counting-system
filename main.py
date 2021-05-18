@@ -44,7 +44,7 @@ def stop():
     stop_detection = True
     logger.info('Loop stopped.', extra={'meta': {'label': 'STOP_LOOP'}})
 
-def run(images_dict, detection_lines, video_path, weight_path, cfg_path):
+def run(images_dict, detection_lines, video_path, weight_path, cfg_path, tracker):
     '''
     Initialize object counter class and run counting loop.
     '''
@@ -75,7 +75,8 @@ def run(images_dict, detection_lines, video_path, weight_path, cfg_path):
     mcdf = settings.MCDF
     mctf = settings.MCTF
     detector = settings.DETECTOR
-    tracker = settings.TRACKER
+    print("TRACKER", tracker)
+    tracker = tracker or settings.TRACKER
     use_droi = settings.USE_DROI
     # create detection region of interest polygon
     # CHANGE

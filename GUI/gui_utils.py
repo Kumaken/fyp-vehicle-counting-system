@@ -11,7 +11,7 @@ from PyQt5.QtCore import Qt, QDir
 # import custom modules:
 from GUI.sliders import Sliders
 from GUI.utils import Utils
-from GUI.const import BUTTON_OPEN_IMG, BUTTON_SAVE_IMG, BUTTON_SAVE_CONFIG, BUTTON_CAPTURE_IMG, BUTTON_LOAD_CONFIG, BUTTON_START_DETECTION, SOURCE_IMG_PATH, OUTPUT_IMG_CV2, OUTPUT_IMG_QT, MASK_IMG_CV2, SLIDER_LABELS, CSV_CONFIG_KEYS, SOURCE_IMG_CV2, PLACEHOLDER_IMG_PATH, BUTTON_LOAD_VIDEO, SOURCE_VIDEO_PATH, YOLO_CONFIG_PATH, YOLO_WEIGHT_PATH
+from GUI.const import BUTTON_OPEN_IMG, BUTTON_SAVE_IMG, BUTTON_SAVE_CONFIG, BUTTON_CAPTURE_IMG, BUTTON_LOAD_CONFIG, BUTTON_START_DETECTION, CHOSEN_TRACKER, SOURCE_IMG_PATH, OUTPUT_IMG_CV2, OUTPUT_IMG_QT, MASK_IMG_CV2, SLIDER_LABELS, CSV_CONFIG_KEYS, SOURCE_IMG_CV2, PLACEHOLDER_IMG_PATH, BUTTON_LOAD_VIDEO, SOURCE_VIDEO_PATH, YOLO_CONFIG_PATH, YOLO_WEIGHT_PATH
 from GUI.video_player import VideoPlayer
 
 class GUIUtils:
@@ -225,7 +225,7 @@ class GUIUtils:
                 return
 
         from main import run
-        run(images_dict, lines, video_path=video_path, weight_path=parent.getWeightPath(), cfg_path=parent.getCFGPath())
+        run(images_dict, lines, video_path=video_path, weight_path=parent.getWeightPath(), cfg_path=parent.getCFGPath(), tracker=parent.getChosenTracker())
 
     @staticmethod
     def loadVideo(parent):
@@ -332,6 +332,8 @@ class GUIUtils:
                 writer.writerow([SOURCE_VIDEO_PATH, parent.video_path])
                 writer.writerow([YOLO_WEIGHT_PATH, parent.getWeightPath()])
                 writer.writerow([YOLO_CONFIG_PATH, parent.getCFGPath()])
+                # trackers:
+                writer.writerow([CHOSEN_TRACKER, parent.getChosenTracker()])
 
                 for i in range(len(sliders)):
                     writer.writerow([SLIDER_LABELS[i], sliders[i].getSliderValue()])
@@ -358,6 +360,10 @@ class GUIUtils:
                 parent.video_path = config_dict[SOURCE_VIDEO_PATH]
                 parent.weight_path = config_dict.get( YOLO_WEIGHT_PATH, None)
                 parent.cfg_path = config_dict.get( YOLO_CONFIG_PATH, None)
+
+                # trackers
+                parent.setChosenTracker(config_dict.get( CHOSEN_TRACKER, parent.getChosenTracker()))
+                parent.getTrackerSelector().updateLabel()
 
                 for i,label in enumerate(SLIDER_LABELS):
                     sliders[i].setSliderValue(int(config_dict[label]))

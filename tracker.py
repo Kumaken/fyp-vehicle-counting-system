@@ -2,6 +2,7 @@
 Functions for keeping track of detected objects in a video.
 '''
 
+from GUI.strings.tracker_options import BOOSTING, CSRT, KCF, MEDIANFLOW, MIL, MOSSE, TLD
 import sys
 import cv2
 import settings
@@ -31,14 +32,36 @@ def _kcf_create(bounding_box, frame):
     tracker.init(frame, bounding_box_tuple)
     return tracker
 
+def createTracker(chosen_tracker, bounding_box, frame):
+    tracker = None
+    if chosen_tracker == CSRT:
+        tracker = cv2.TrackerCSRT_create()
+    elif chosen_tracker == KCF:
+        tracker = cv2.TrackerKCF_create()
+    elif chosen_tracker == BOOSTING:
+        tracker = cv2.legacy_TrackerBoosting.create()
+    elif chosen_tracker == MIL:
+        tracker = cv2.TrackerMIL_create()
+    elif chosen_tracker == TLD:
+        tracker = cv2.legacy_TrackerTLD.create()
+    elif chosen_tracker == MEDIANFLOW:
+        tracker = cv2.legacy_TrackerMedianFlow.create()
+    elif chosen_tracker == MOSSE:
+        tracker = cv2.legacy_TrackerMOSSE.create()
+
+    bounding_box_tuple = tuple([int(x) for x in bounding_box])
+    tracker.init(frame, bounding_box_tuple)
+    return tracker
+
 def get_tracker(algorithm, bounding_box, frame):
     '''
     Fetch a tracker object based on the algorithm specified.
     '''
-    if algorithm == 'csrt':
-        return _csrt_create(bounding_box, frame)
-    if algorithm == 'kcf':
-        return _kcf_create(bounding_box, frame)
+    return createTracker(algorithm, bounding_box, frame)
+    # if algorithm == 'csrt':
+    #     return _csrt_create(bounding_box, frame)
+    # if algorithm == 'kcf':
+    #     return _kcf_create(bounding_box, frame)
 
     logger.error('Invalid tracking algorithm specified (options: csrt, kcf)', extra={
         'meta': {'label': 'INVALID_TRACKING_ALGORITHM'},

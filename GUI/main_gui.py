@@ -1,3 +1,4 @@
+from GUI.components.tracker_selector import TrackerSelector
 from PyQt5 import QtGui, QtCore, QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QApplication, QCheckBox, QGridLayout, QGroupBox,
@@ -53,6 +54,10 @@ class DisplayImageWidget(QtWidgets.QWidget):
         self.weight_path = None
         self.cfg_path = None
 
+        # trackers
+        self.chosen_tracker = None
+        self.tracker_selector = None
+
         # widgets
         self.path_widget = None
 
@@ -102,6 +107,9 @@ class DisplayImageWidget(QtWidgets.QWidget):
         GUIUtils.setupLineList(self, self.lines, list_layout)
         third_column.addLayout(list_layout)
 
+        self.tracker_selector = TrackerSelector(self).setup()
+        third_column.addLayout(self.tracker_selector.getLayout())
+
         self.path_widget = PathWidget(self)
         third_column.addLayout(self.path_widget.setup().getLayout())
 
@@ -118,6 +126,8 @@ class DisplayImageWidget(QtWidgets.QWidget):
     def setCFG(self, cfg_path):
         self.cfg_path = cfg_path
 
+    def setChosenTracker(self, tracker):
+        self.chosen_tracker = tracker
 
     # getters:
     def getSourceImagePath(self):
@@ -137,6 +147,12 @@ class DisplayImageWidget(QtWidgets.QWidget):
 
     def getPathWidget(self):
         return self.path_widget
+
+    def getChosenTracker(self):
+        return self.chosen_tracker
+
+    def getTrackerSelector(self):
+        return self.tracker_selector
 
 def start_GUI():
     app = QtWidgets.QApplication(sys.argv)

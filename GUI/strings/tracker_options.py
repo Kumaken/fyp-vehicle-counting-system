@@ -1,0 +1,11 @@
+CSRT = "CSRT"
+KCF = "KCF"
+BOOSTING = "BOOSTING"
+MIL = "MIL"
+TLD = "TLD"
+MEDIANFLOW = "MEDIANFLOW"
+MOSSE = "MOSSE"
+
+# message strings:
+TRACKER_DEFAULT = "KCF"
+TRACKER_PREFIX = "Selected Tracker: "
