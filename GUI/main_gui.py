@@ -1,3 +1,4 @@
+from GUI.components.counting_mode_radio_button import CountingModeRadioButton
 from GUI.components.tracker_selector import TrackerSelector
 from PyQt5 import QtGui, QtCore, QtWidgets
 from PyQt5.QtCore import Qt
@@ -58,6 +59,9 @@ class DisplayImageWidget(QtWidgets.QWidget):
         self.chosen_tracker = None
         self.tracker_selector = None
 
+        # detection mode
+        self.counting_mode = None
+
         # widgets
         self.path_widget = None
 
@@ -103,13 +107,20 @@ class DisplayImageWidget(QtWidgets.QWidget):
 
 
         third_column = QVBoxLayout()
+        # line list widget
         list_layout = QGridLayout()
         GUIUtils.setupLineList(self, self.lines, list_layout)
         third_column.addLayout(list_layout)
 
+        # detection mode radio button
+        self.counting_mode_radio_button = CountingModeRadioButton(self).setup()
+        third_column.addLayout(self.counting_mode_radio_button.getLayout())
+
+        # tracker selector
         self.tracker_selector = TrackerSelector(self).setup()
         third_column.addLayout(self.tracker_selector.getLayout())
 
+        # paths widget
         self.path_widget = PathWidget(self)
         third_column.addLayout(self.path_widget.setup().getLayout())
 
@@ -128,6 +139,9 @@ class DisplayImageWidget(QtWidgets.QWidget):
 
     def setChosenTracker(self, tracker):
         self.chosen_tracker = tracker
+
+    def setCountingMode(self, mode):
+        self.counting_mode = mode
 
     # getters:
     def getSourceImagePath(self):
@@ -153,6 +167,12 @@ class DisplayImageWidget(QtWidgets.QWidget):
 
     def getTrackerSelector(self):
         return self.tracker_selector
+
+    def getCountingMode(self):
+        return self.counting_mode
+
+    def getCountingModeRadioButton(self):
+        return self.counting_mode_radio_button
 
 def start_GUI():
     app = QtWidgets.QApplication(sys.argv)

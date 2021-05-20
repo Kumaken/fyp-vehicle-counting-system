@@ -1,5 +1,6 @@
 # pylint: disable=missing-module-docstring,invalid-name
 
+from consts.object_counter import COUNTING_MODE_ACTUAL_LABEL_NAME
 import time
 from util.logger import get_logger
 
@@ -66,7 +67,7 @@ def _has_crossed_counting_line(bbox, line):
         return True
     return False
 
-def attempt_count(blob, blob_id, counting_lines, counts):
+def attempt_count_lines(blob, blob_id, counting_lines, counts):
     '''
     Check if a blob has crossed a counting line.
     '''
@@ -92,4 +93,15 @@ def attempt_count(blob, blob_id, counting_lines, counts):
             #         'counted_at':time.time(),
             #     },
             # })
+    return blob, counts
+
+def attempt_count_actual(blob, blob_id, counts):
+    '''
+    Count every bounding boxes detected
+    '''
+    label = COUNTING_MODE_ACTUAL_LABEL_NAME
+    if (label not in blob.lines_crossed):
+        counts[label][blob.type] += 1
+
+        blob.lines_crossed.append(label)
     return blob, counts

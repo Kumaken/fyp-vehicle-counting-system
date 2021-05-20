@@ -4,6 +4,7 @@ VCS entry point.
 
 # pylint: disable=wrong-import-position
 
+from consts.object_counter import COUNTING_MODE_LINES
 import sys
 import time
 import cv2
@@ -44,7 +45,7 @@ def stop():
     stop_detection = True
     logger.info('Loop stopped.', extra={'meta': {'label': 'STOP_LOOP'}})
 
-def run(images_dict, detection_lines, video_path, weight_path, cfg_path, tracker):
+def run(images_dict, detection_lines, video_path, weight_path, cfg_path, tracker, counting_mode=COUNTING_MODE_LINES):
     '''
     Initialize object counter class and run counting loop.
     '''
@@ -91,7 +92,7 @@ def run(images_dict, detection_lines, video_path, weight_path, cfg_path, tracker
     hud_color = settings.HUD_COLOR
 
     object_counter = ObjectCounter(frame, detector, tracker, droi, show_droi, mcdf, mctf,
-                                   detection_interval, counting_lines, show_counts, hud_color)
+                                   detection_interval, counting_lines, show_counts, hud_color, counting_mode=counting_mode)
 
     record = settings.RECORD
     if record:
@@ -181,8 +182,8 @@ def run(images_dict, detection_lines, video_path, weight_path, cfg_path, tracker
             fps = 1/(new_frame_time-prev_frame_time)
             prev_frame_time = new_frame_time
 
-            # converting the fps into integer
-            fps = str(fps)
+            # converting the fps into integer and then to string
+            fps = str(int(fps))
 
             # puting the FPS count on the frame
             cv2.putText(frame, "FPS:"+fps, (settings.DEBUG_WINDOW_SIZE[0], 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 1, cv2.LINE_AA)

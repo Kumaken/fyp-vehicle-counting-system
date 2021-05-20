@@ -4,6 +4,7 @@ Object Counter class.
 
 # pylint: disable=missing-class-docstring,missing-function-docstring,invalid-name
 
+from consts.object_counter import COUNTING_MODE_ACTUAL, COUNTING_MODE_ACTUAL_LABEL_NAME, COUNTING_MODE_LINES
 import multiprocessing
 import cv2
 from joblib import Parallel, delayed
@@ -12,7 +13,7 @@ from tracker import add_new_blobs, remove_duplicates, update_blob_tracker
 from detectors.detector import get_bounding_boxes
 from util.detection_roi import  draw_roi
 from util.logger import get_logger
-from counter import attempt_count
+from counter import attempt_count_actual, attempt_count_lines
 
 from GUI.utils import Utils
 logger = get_logger()
@@ -26,7 +27,7 @@ with open(settings.YOLO_CLASSES_PATH, 'r') as classes_file:
 class ObjectCounter():
     line_colors = [(255, 129, 61), (255, 255, 20), (98, 255, 20), (20, 255, 224), (20, 157, 255), (0, 26, 255), (64, 0, 255), (157, 0, 255), (255, 0, 247), (255, 0, 38), (255, 255, 255), (0, 0, 0)]
 
-    def __init__(self, initial_frame, detector, tracker, droi, show_droi, mcdf, mctf, di, counting_lines, show_counts, hud_color):
+    def __init__(self, initial_frame, detector, tracker, droi, show_droi, mcdf, mctf, di, counting_lines, show_counts, hud_color, counting_mode=COUNTING_MODE_ACTUAL):
         self.frame = initial_frame # current frame of video
         self.detector = detector
         self.tracker = tracker
@@ -39,9 +40,19 @@ class ObjectCounter():
         self.blobs = {}
         self.f_height, self.f_width, _ = self.frame.shape
         self.frame_count = 0 # number of frames since last detection
-        self.counts = {counting_line['label']: {} for counting_line in counting_lines} # counts of objects by type for each counting line
+        # counting modes:
+        self.counting_mode = counting_mode
+        if self.counting_mode == COUNTING_MODE_LINES:
+            self.counts = {counting_line['label']: {} for counting_line in counting_lines} # counts of objects by type for each counting line
+        else:
+            self.counts = {}
+            with open(settings.YOLO_CLASSES_OF_INTEREST_PATH, 'r') as coi_file:
+                CLASSES_OF_INTEREST = []
+                self.counts[COUNTING_MODE_ACTUAL_LABEL_NAME] = {line.strip(): 0 for line in coi_file.readlines()}
+
         self.show_counts = show_counts
         self.hud_color = hud_color
+
 
         # create blobs from initial frame
         # CHANGE:
@@ -70,12 +81,18 @@ class ObjectCounter():
         self.blobs = dict(blobs_list)
 
         for blob_id, blob in blobs_list:
-            # count object if it has crossed a counting line
-            blob, self.counts = attempt_count(blob, blob_id, self.counting_lines, self.counts)
-            self.blobs[blob_id] = blob
+            if self.counting_mode == COUNTING_MODE_LINES:
+                # count object if it has crossed a counting line
+                blob, self.counts = attempt_count_lines(blob, blob_id, self.counting_lines, self.counts)
+                self.blobs[blob_id] = blob
+            elif self.counting_mode == COUNTING_MODE_ACTUAL:
+                blob, self.counts = attempt_count_actual(blob, blob_id, self.counts)
+                self.blobs[blob_id] = blob
 
             # remove blob if it has reached the limit for tracking failures
             if blob.num_consecutive_tracking_failures >= self.mctf:
+                if self.counting_mode == COUNTING_MODE_ACTUAL:
+                    self.counts[COUNTING_MODE_ACTUAL_LABEL_NAME][blob.type] -= 1
                 del self.blobs[blob_id]
 
         if self.frame_count >= self.detection_interval:
@@ -111,15 +128,16 @@ class ObjectCounter():
             cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
             object_label = 'I: ' + _id[:8] \
                             if blob.type is None \
-                            else 'ID:{0}; Type:{1}; Conf:({2})'.format(_id[:8], blob.type, str(blob.type_confidence)[:4])
+                            else '{0} ({1})'.format(blob.type, str(blob.type_confidence)[:4])
             cv2.putText(frame, object_label, (x, y - 5), font, 1, color, 2, line_type)
 
-        # draw counting lines
-        for i, counting_line in enumerate(self.counting_lines):
-            color_idx = i % len(self.line_colors)
-            cv2.line(frame, counting_line['line'][0], counting_line['line'][1], self.line_colors[color_idx], 3)
-            cl_label_origin = (counting_line['line'][0][0], counting_line['line'][0][1] + 35)
-            cv2.putText(frame, counting_line['label'], cl_label_origin, font, 1, self.line_colors[color_idx], 2, line_type)
+        if self.counting_mode == COUNTING_MODE_LINES:
+            # draw counting lines
+            for i, counting_line in enumerate(self.counting_lines):
+                color_idx = i % len(self.line_colors)
+                cv2.line(frame, counting_line['line'][0], counting_line['line'][1], self.line_colors[color_idx], 3)
+                cl_label_origin = (counting_line['line'][0][0], counting_line['line'][0][1] + 35)
+                cv2.putText(frame, counting_line['label'], cl_label_origin, font, 1, self.line_colors[color_idx], 2, line_type)
 
         # show detection roi
         # CHANGE
