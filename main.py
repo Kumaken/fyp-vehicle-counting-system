@@ -22,7 +22,7 @@ from util.debugger import mouse_callback
 from ObjectCounter import ObjectCounter
 
 from GUI.const import MASK_IMG_CV2
-from GUI.detector_gui import DetectorGUI
+from GUI.components.detector_gui import DetectorGUI
 init_logger()
 logger = get_logger()
 
@@ -91,8 +91,11 @@ def run(images_dict, detection_lines, video_path, weight_path, cfg_path, tracker
     show_counts = settings.SHOW_COUNTS
     hud_color = settings.HUD_COLOR
 
+    # initialize control gui:
+    detector_gui = DetectorGUI().setup()
+
     object_counter = ObjectCounter(frame, detector, tracker, droi, show_droi, mcdf, mctf,
-                                   detection_interval, counting_lines, show_counts, hud_color, counting_mode=counting_mode)
+                                   detection_interval, counting_lines, show_counts, hud_color, detector_gui,counting_mode=counting_mode)
 
     record = settings.RECORD
     if record:
@@ -133,12 +136,12 @@ def run(images_dict, detection_lines, video_path, weight_path, cfg_path, tracker
 
     # is_paused = False
 
+    # show GUI:
+    detector_gui.show()
+
     frames_count = round(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     frames_processed = 0
 
-    # initialize control gui:
-    detector_gui = DetectorGUI()
-    detector_gui.show()
 
     # to count FPS:
     # used to record the time when we processed last frame
@@ -186,7 +189,8 @@ def run(images_dict, detection_lines, video_path, weight_path, cfg_path, tracker
             fps = str(int(fps))
 
             # puting the FPS count on the frame
-            cv2.putText(frame, "FPS:"+fps, (settings.DEBUG_WINDOW_SIZE[0], 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 1, cv2.LINE_AA)
+            # cv2.putText(frame, "FPS:"+fps, (settings.DEBUG_WINDOW_SIZE[0], 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 1, cv2.LINE_AA)
+            detector_gui.refreshFPS(fps)
 
             # if record:
             #     output_video.write(output_frame)

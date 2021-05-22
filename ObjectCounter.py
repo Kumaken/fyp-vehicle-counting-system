@@ -27,7 +27,7 @@ with open(settings.YOLO_CLASSES_PATH, 'r') as classes_file:
 class ObjectCounter():
     line_colors = [(255, 129, 61), (255, 255, 20), (98, 255, 20), (20, 255, 224), (20, 157, 255), (0, 26, 255), (64, 0, 255), (157, 0, 255), (255, 0, 247), (255, 0, 38), (255, 255, 255), (0, 0, 0)]
 
-    def __init__(self, initial_frame, detector, tracker, droi, show_droi, mcdf, mctf, di, counting_lines, show_counts, hud_color, counting_mode=COUNTING_MODE_ACTUAL):
+    def __init__(self, initial_frame, detector, tracker, droi, show_droi, mcdf, mctf, di, counting_lines, show_counts, hud_color, detector_gui,  counting_mode=COUNTING_MODE_ACTUAL):
         self.frame = initial_frame # current frame of video
         self.detector = detector
         self.tracker = tracker
@@ -47,12 +47,11 @@ class ObjectCounter():
         else:
             self.counts = {}
             with open(settings.YOLO_CLASSES_OF_INTEREST_PATH, 'r') as coi_file:
-                CLASSES_OF_INTEREST = []
                 self.counts[COUNTING_MODE_ACTUAL_LABEL_NAME] = {line.strip(): 0 for line in coi_file.readlines()}
 
         self.show_counts = show_counts
         self.hud_color = hud_color
-
+        self.detector_gui = detector_gui
 
         # create blobs from initial frame
         # CHANGE:
@@ -156,5 +155,7 @@ class ObjectCounter():
                     cv2.putText(frame, "{}: {}".format(label, count), (10, 40 * offset), font, 1, self.line_colors[color_idx], 2, line_type)
                 offset += 2
                 i += 1
+
+            self.detector_gui.refreshDetectionTable(self.counts.items())
 
         return frame

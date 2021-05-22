@@ -1,0 +1,1 @@
+FPS_STRING = "FPS: "
