@@ -1,3 +1,4 @@
+from GUI.components.hsv_sliders import HSVSliders
 from GUI.components.counting_mode_radio_button import CountingModeRadioButton
 from GUI.components.tracker_selector import TrackerSelector
 from PyQt5 import QtGui, QtCore, QtWidgets
@@ -12,7 +13,6 @@ import numpy as np
 import sys
 
 # import custom modules:
-from GUI.sliders import Sliders
 from GUI.gui_utils import GUIUtils
 from GUI.custom_dict import CustomDict
 from GUI.const import BUTTON_OPEN_IMG, BUTTON_SAVE_IMG, BUTTON_CAPTURE_IMG, SOURCE_IMG_PATH,IMAGE_DICT_KEYS, OUTPUT_IMG_QT, PLACEHOLDER_IMG_PATH
@@ -97,8 +97,9 @@ class DisplayImageWidget(QtWidgets.QWidget):
         # SLIDERS:
         self.layout_dict.sliders_layout = QGridLayout()
         second_column = QVBoxLayout()
-        GUIUtils.createHSVSliders(self.layout_dict.sliders_layout, self.sliders, self.images_dict, self.label_dict, self)
-        second_column.addLayout(self.layout_dict.sliders_layout)
+        second_column.addLayout(HSVSliders(self).setup().getLayout())
+        # GUIUtils.createHSVSliders(self.layout_dict.sliders_layout, self.sliders, self.images_dict, self.label_dict, self)
+        # second_column.addLayout(self.layout_dict.sliders_layout)
 
         buttons_layout = GUIUtils.setupButtons(self, self.buttons_dict, self.images_dict, self.label_dict, self.sliders)
         second_column.addLayout(buttons_layout)
@@ -143,6 +144,9 @@ class DisplayImageWidget(QtWidgets.QWidget):
     def setCountingMode(self, mode):
         self.counting_mode = mode
 
+    def addSlider(self, slider):
+        self.sliders.append(slider)
+
     # getters:
     def getSourceImagePath(self):
         return self.images_dict[SOURCE_IMG_PATH]
@@ -173,6 +177,15 @@ class DisplayImageWidget(QtWidgets.QWidget):
 
     def getCountingModeRadioButton(self):
         return self.counting_mode_radio_button
+
+    def getImagesDict(self):
+        return self.images_dict
+
+    def getLabelDict(self):
+        return self.label_dict
+
+    def getSliders(self):
+        return self.sliders
 
 def start_GUI():
     app = QtWidgets.QApplication(sys.argv)

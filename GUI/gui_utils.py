@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import (QLabel, QFileDialog, QPushButton, QDialog, QGridLay
 from PyQt5.QtCore import Qt, QDir
 
 # import custom modules:
-from GUI.sliders import Sliders
+from GUI.components.sliders import Sliders
 from GUI.utils import Utils
 from GUI.const import BUTTON_OPEN_IMG, BUTTON_SAVE_IMG, BUTTON_SAVE_CONFIG, BUTTON_CAPTURE_IMG, BUTTON_LOAD_CONFIG, BUTTON_START_DETECTION, CHOSEN_COUNTING_MODE, CHOSEN_TRACKER, SOURCE_IMG_PATH, OUTPUT_IMG_CV2, OUTPUT_IMG_QT, MASK_IMG_CV2, SLIDER_LABELS, CSV_CONFIG_KEYS, SOURCE_IMG_CV2, PLACEHOLDER_IMG_PATH, BUTTON_LOAD_VIDEO, SOURCE_VIDEO_PATH, YOLO_CONFIG_PATH, YOLO_WEIGHT_PATH
 from GUI.video_player import VideoPlayer
@@ -98,14 +98,6 @@ class GUIUtils:
         # image_layout.addWidget(label_dict.output_image_label, 3, 0, 1, 2, Qt.AlignCenter)
 
 
-
-    @staticmethod
-    def createHSVSliders(grid, sliders, images_dict, label_dict, parent):
-        for i in range(6):
-            slider = Sliders(SLIDER_LABELS[i], 1 if i<3 else 255, parent) # IMPORTANT: PASS SELF AS PARENT!
-            slider.sl.valueChanged[int].connect(lambda: GUIUtils.refreshImage(parent, images_dict, label_dict, sliders))
-            sliders.append(slider)
-            grid.addWidget(slider.getComponent(), i % 3, 0 if i < 3 else 1)
 
     @staticmethod
     def setupSourceImage(images_dict, label_dict):
