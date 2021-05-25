@@ -67,7 +67,10 @@ class GUIUtils:
         for line_entry in parent.lines:
             point1, point2 = line_entry['line']
             # print("Drawing line between: ", point1, point2)
-            cv2.line(image, point1, point2, [0, 0, 255], 10)
+            if parent.getHighlightedLine() == line_entry['label']:
+                cv2.line(image, point1, point2, [255,255,0], 10)
+            else:
+                cv2.line(image, point1, point2, [0, 0, 255], 10)
         return image
 
     @staticmethod

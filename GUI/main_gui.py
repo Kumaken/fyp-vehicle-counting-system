@@ -25,6 +25,7 @@ class DisplayImageWidget(QtWidgets.QWidget):
         super().__init__()
         self.sliders = []
         self.lines = []
+        self.highlighted_line = None
         self.images_dict = CustomDict()
         for key in IMAGE_DICT_KEYS:
             self.images_dict[key] = None
@@ -147,6 +148,9 @@ class DisplayImageWidget(QtWidgets.QWidget):
     def addSlider(self, slider):
         self.sliders.append(slider)
 
+    def setHighlightedLine(self, line_name):
+        self.highlighted_line = line_name
+
     # getters:
     def getSourceImagePath(self):
         return self.images_dict[SOURCE_IMG_PATH]
@@ -186,6 +190,9 @@ class DisplayImageWidget(QtWidgets.QWidget):
 
     def getSliders(self):
         return self.sliders
+
+    def getHighlightedLine(self):
+        return self.highlighted_line
 
 def start_GUI():
     app = QtWidgets.QApplication(sys.argv)

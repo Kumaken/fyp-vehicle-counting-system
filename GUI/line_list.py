@@ -1,3 +1,4 @@
+from GUI.gui_utils import GUIUtils
 import sys
 from PyQt5.QtCore import *
 from PyQt5.QtGui import QIcon, QPixmap
@@ -7,6 +8,7 @@ class LineListWidget(QListWidget):
     def __init__(self, parent, lines):
         super(LineListWidget,self).__init__()
         self.parent = parent
+        self.itemClicked.connect(self.listWidgetClicked)
 
     # def clicked(self, item):
     #     QMessageBox.information(self, "ListWidget", "ListWidget: " + item.text())
@@ -76,6 +78,9 @@ class LineListWidget(QListWidget):
 
 
 
+    def listWidgetClicked(self, item):
+        self.parent.setHighlightedLine(item.text())
+        GUIUtils.refreshLines(self.parent, self.parent.getLabelDict(), self.parent.getImagesDict())
 
     def setupList(self):
         # print("Setup List!", self.parent.lines)
