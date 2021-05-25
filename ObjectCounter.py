@@ -144,18 +144,18 @@ class ObjectCounter():
             frame = draw_roi(frame, self.droi)
 
         # show counts
-        if self.show_counts:
-            offset = 1
-            i = 0
-            for line, objects in self.counts.items():
-                color_idx = i % len(self.line_colors)
-                cv2.putText(frame, line, (10, 40 * offset), font, 1, self.line_colors[color_idx], 2, line_type)
-                for label, count in objects.items():
-                    offset += 1
-                    cv2.putText(frame, "{}: {}".format(label, count), (10, 40 * offset), font, 1, self.line_colors[color_idx], 2, line_type)
-                offset += 2
-                i += 1
+        # if self.show_counts:
+        #     offset = 1
+        #     i = 0
+        #     for line, objects in self.counts.items():
+        #         color_idx = i % len(self.line_colors)
+        #         cv2.putText(frame, line, (10, 40 * offset), font, 1, self.line_colors[color_idx], 2, line_type)
+        #         for label, count in objects.items():
+        #             offset += 1
+        #             cv2.putText(frame, "{}: {}".format(label, count), (10, 40 * offset), font, 1, self.line_colors[color_idx], 2, line_type)
+        #         offset += 2
+        #         i += 1
 
-            self.detector_gui.refreshDetectionTable(self.counts.items())
+        self.detector_gui.refreshDetectionTable(self.counts.items())
 
         return frame
