@@ -1,4 +1,4 @@
-from GUI.strings.detector_gui import FPS_STRING
+from GUI.strings.detector_gui import DETECTION_TABLE_COLUMN_HEADERS, FPS_STRING
 from PyQt5 import  QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import ( QGridLayout, QPushButton, QTableWidgetItem, QVBoxLayout,QHeaderView, QLabel, QTableWidget)
@@ -58,6 +58,7 @@ class DetectorGUI(QtWidgets.QWidget):
         detection_table = QTableWidget()
         detection_table.setRowCount(rowNum)
         detection_table.setColumnCount(2)
+        detection_table.setHorizontalHeaderLabels(DETECTION_TABLE_COLUMN_HEADERS)
 
         # set table to fit window horizontally
         detection_table.horizontalHeader().setStretchLastSection(True)
