@@ -2,6 +2,7 @@
 Functions for keeping track of detected objects in a video.
 '''
 
+from consts.object_counter import COUNTING_MODE_ACTUAL_LABEL_NAME
 from GUI.strings.tracker_options import BOOSTING, CSRT, KCF, MEDIANFLOW, MIL, MOSSE, TLD
 import sys
 import cv2
@@ -68,7 +69,7 @@ def get_tracker(algorithm, bounding_box, frame):
     })
     sys.exit()
 
-def _remove_stray_blobs(blobs, matched_blob_ids, mcdf):
+def _remove_stray_blobs(blobs, matched_blob_ids, mcdf, counts, actual_mode = False):
     '''
     Remove blobs that "hang" after a tracked object has left the frame.
     '''
@@ -76,10 +77,12 @@ def _remove_stray_blobs(blobs, matched_blob_ids, mcdf):
         if blob_id not in matched_blob_ids:
             blob.num_consecutive_detection_failures += 1
         if blob.num_consecutive_detection_failures > mcdf:
+            if actual_mode:
+                counts[COUNTING_MODE_ACTUAL_LABEL_NAME][blob.type] -= 1
             del blobs[blob_id]
     return blobs
 
-def add_new_blobs(boxes, classes, confidences, blobs, frame, tracker, mcdf):
+def add_new_blobs(boxes, classes, confidences, blobs, frame, tracker, mcdf, counts, actual_mode):
     '''
     Add new blobs or updates existing ones.
     '''
@@ -126,10 +129,10 @@ def add_new_blobs(boxes, classes, confidences, blobs, frame, tracker, mcdf):
             #     blog_create_log_meta['image'] = get_base64_image(get_box_image(frame, _blob.bounding_box))
             # logger.debug('Blob created.', extra={'meta': blog_create_log_meta})
 
-    blobs = _remove_stray_blobs(blobs, matched_blob_ids, mcdf)
+    blobs = _remove_stray_blobs(blobs, matched_blob_ids, mcdf, counts, actual_mode)
     return blobs
 
-def remove_duplicates(blobs):
+def remove_duplicates(blobs, counts, actual_mode = False):
     '''
     Remove duplicate blobs i.e blobs that point to an already detected and tracked object.
     '''
@@ -139,7 +142,10 @@ def remove_duplicates(blobs):
                 break
 
             if get_overlap(blob_a.bounding_box, blob_b.bounding_box) >= 0.6 and blob_id in blobs:
+                if actual_mode:
+                    counts[COUNTING_MODE_ACTUAL_LABEL_NAME][blob_a.type] -= 1
                 del blobs[blob_id]
+
     return blobs
 
 def update_blob_tracker(blob, blob_id, frame):

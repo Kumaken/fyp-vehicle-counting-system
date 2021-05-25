@@ -61,7 +61,7 @@ class ObjectCounter():
         cv2.waitKey(0);
         droi_frame = Utils.maskImage(self.frame, self.droi)
         _bounding_boxes, _classes, _confidences = get_bounding_boxes(droi_frame, self.detector)
-        self.blobs = add_new_blobs(_bounding_boxes, _classes, _confidences, self.blobs, self.frame, self.tracker, self.mcdf)
+        self.blobs = add_new_blobs(_bounding_boxes, _classes, _confidences, self.blobs, self.frame, self.tracker, self.mcdf, self.counts, self.counting_mode)
 
     def get_counts(self):
         return self.counts
@@ -101,8 +101,8 @@ class ObjectCounter():
             droi_frame = Utils.maskImage(self.frame, self.droi)
             _bounding_boxes, _classes, _confidences = get_bounding_boxes(droi_frame, self.detector)
 
-            self.blobs = add_new_blobs(_bounding_boxes, _classes, _confidences, self.blobs, self.frame, self.tracker, self.mcdf)
-            self.blobs = remove_duplicates(self.blobs)
+            self.blobs = add_new_blobs(_bounding_boxes, _classes, _confidences, self.blobs, self.frame, self.tracker, self.mcdf, self.counts, self.counting_mode)
+            self.blobs = remove_duplicates(self.blobs, self.counts, self.counting_mode)
             self.frame_count = 0
 
         self.frame_count += 1
