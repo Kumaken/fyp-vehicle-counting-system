@@ -13,3 +13,6 @@ ivyenv
 #opencv stuffs
 opencv
 opencv_contrib
+
+# python stuffs:
+__pycache__
