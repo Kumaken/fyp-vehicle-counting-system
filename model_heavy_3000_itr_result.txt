@@ -1,0 +1,31 @@
+yolo] params: iou loss: ciou (4), iou_norm: 0.07, obj_norm: 1.00, cls_norm: 1.00, delta_norm: 1.00, scale_x_y: 1.05
+nms_kind: greedynms (1), beta = 0.600000 
+Total BFLOPS 214.596 
+avg_outputs = 1909992 
+ Allocate additional workspace_size = 67.53 MB 
+Loading weights from backup/voc_combined_vehicle_heavier/yolo-obj-vehicle-heavier_last.weights...
+ seen 64, trained: 204 K-images (3 Kilo-batches_64) 
+Done! Loaded 162 layers from weights-file 
+
+ calculation mAP (mean average precision)...
+ Detection layer: 139 - type = 28 
+ Detection layer: 150 - type = 28 
+ Detection layer: 161 - type = 28 
+4952
+ detections_count = 14023, unique_truth_count = 2076  
+class_id = 0, name = bicycle, ap = 51.46%   	 (TP = 206, FP = 152) 
+class_id = 1, name = bus, ap = 37.48%   	 (TP = 116, FP = 131) 
+class_id = 2, name = car, ap = 70.25%   	 (TP = 937, FP = 547) 
+class_id = 3, name = motorbike, ap = 61.55%   	 (TP = 184, FP = 85) 
+
+ for conf_thresh = 0.25, precision = 0.61, recall = 0.70, F1-score = 0.65 
+ for conf_thresh = 0.25, TP = 1443, FP = 915, FN = 633, average IoU = 44.28 % 
+
+ IoU threshold = 50 %, used Area-Under-Curve for each unique Recall 
+ mean average precision (mAP@0.50) = 0.551866, or 55.19 % 
+Total Detection Time: 1062 Seconds
+
+Set -points flag:
+ `-points 101` for MS COCO 
+ `-points 11` for PascalVOC 2007 (uncomment `difficult` in voc.data) 
+ `-points 0` (AUC) for ImageNet, PascalVOC 2010-2012, your custom dataset

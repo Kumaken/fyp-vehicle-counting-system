@@ -230,7 +230,7 @@ class GUIUtils:
         print(fileName)
         if (fileName):
             parent.video_path = fileName
-            GUIUtils.refreshPathLabels(parent)
+            parent.getPathWidget().refreshLabels()
         else:
             print("videofile invalid!")
 

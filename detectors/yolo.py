@@ -31,7 +31,7 @@ net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA);
 
 layer_names = net.getLayerNames()
 output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
-print("output_layers", output_layers)
+# print("output_layers", output_layers)
 # net = cv2.dnn.readNet(settings.YOLO_WEIGHTS_PATH)
 
 def get_bounding_boxes(image):
@@ -82,7 +82,7 @@ def get_bounding_boxes(image):
             class_id = np.argmax(scores)
             confidence = scores[class_id]
             if((class_id == 3 or class_id == 0) and confidence != 0):
-                print(CLASSES[class_id], confidence)
+                # print(CLASSES[class_id], confidence)
                 conf_threshold_ = 0.2
 
             # if confidence > conf_threshold and CLASSES[class_id] in CLASSES_OF_INTEREST:
