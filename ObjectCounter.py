@@ -4,6 +4,7 @@ Object Counter class.
 
 # pylint: disable=missing-class-docstring,missing-function-docstring,invalid-name
 
+from GUI.strings.tracker_options import NO_TRACKER
 from consts.object_counter import COUNTING_MODE_ACTUAL, COUNTING_MODE_ACTUAL_LABEL_NAME, COUNTING_MODE_LINES
 import multiprocessing
 import cv2
@@ -74,10 +75,11 @@ class ObjectCounter():
 
         blobs_list = list(self.blobs.items())
         # update blob trackers
-        blobs_list = Parallel(n_jobs=NUM_CORES, prefer='threads')(
-            delayed(update_blob_tracker)(blob, blob_id, self.frame) for blob_id, blob in blobs_list
-        )
-        self.blobs = dict(blobs_list)
+        if self.tracker != NO_TRACKER:
+            blobs_list = Parallel(n_jobs=NUM_CORES, prefer='threads')(
+                delayed(update_blob_tracker)(blob, blob_id, self.frame) for blob_id, blob in blobs_list
+            )
+            self.blobs = dict(blobs_list)
 
         for blob_id, blob in blobs_list:
             if self.counting_mode == COUNTING_MODE_LINES:

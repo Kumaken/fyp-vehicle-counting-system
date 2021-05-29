@@ -68,8 +68,8 @@ class DisplayImageWidget(QtWidgets.QWidget):
         self.path_widget = None
 
         # confidence thresholds:
-        self.yolo_conf_threshold = None
-        self.nms_threshold = None
+        self.yolo_conf_threshold = 0.2
+        self.nms_threshold = 0.4
         self.conf_sliders = None
 
         # SET

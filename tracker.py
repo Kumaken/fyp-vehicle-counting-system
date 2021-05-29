@@ -3,7 +3,7 @@ Functions for keeping track of detected objects in a video.
 '''
 
 from consts.object_counter import COUNTING_MODE_ACTUAL, COUNTING_MODE_ACTUAL_LABEL_NAME
-from GUI.strings.tracker_options import BOOSTING, CSRT, KCF, MEDIANFLOW, MIL, MOSSE, TLD
+from GUI.strings.tracker_options import BOOSTING, CSRT, KCF, MEDIANFLOW, MIL, MOSSE, NO_TRACKER, TLD
 import sys
 import cv2
 import settings
@@ -49,6 +49,9 @@ def createTracker(chosen_tracker, bounding_box, frame):
         tracker = cv2.legacy_TrackerMedianFlow.create()
     elif chosen_tracker == MOSSE:
         tracker = cv2.legacy_TrackerMOSSE.create()
+    elif chosen_tracker == NO_TRACKER:
+        tracker = None
+        return tracker
 
     bounding_box_tuple = tuple([int(x) for x in bounding_box])
     tracker.init(frame, bounding_box_tuple)

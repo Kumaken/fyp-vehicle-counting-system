@@ -1,10 +1,10 @@
 from PyQt5.QtWidgets import (QLabel, QComboBox, QVBoxLayout)
-from GUI.strings.tracker_options import CSRT, KCF, BOOSTING, MIL, TLD, MEDIANFLOW, MOSSE, TRACKER_DEFAULT, TRACKER_PREFIX
+from GUI.strings.tracker_options import CSRT, KCF, BOOSTING, MIL, NO_TRACKER, TLD, MEDIANFLOW, MOSSE, TRACKER_DEFAULT, TRACKER_PREFIX
 
 class TrackerSelector:
     def __init__(self, parent=None):
         self.parent = parent
-        self.tracker_options = [KCF, CSRT, BOOSTING, MIL, TLD, MEDIANFLOW, MOSSE]
+        self.tracker_options = [KCF, CSRT, BOOSTING, MIL, TLD, MEDIANFLOW, MOSSE, NO_TRACKER]
         self.chosen_tracker_label = QLabel(self.createTrackerPrefixString(TRACKER_PREFIX, TRACKER_DEFAULT))
         self.combo_box = QComboBox(self.parent)
         self.layout = QVBoxLayout()
