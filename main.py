@@ -45,7 +45,7 @@ def stop():
     stop_detection = True
     logger.info('Loop stopped.', extra={'meta': {'label': 'STOP_LOOP'}})
 
-def run(images_dict, detection_lines, video_path, weight_path, cfg_path, tracker, counting_mode=COUNTING_MODE_LINES):
+def run(images_dict, detection_lines, video_path, weight_path, cfg_path, tracker, yolo_conf, nms_threshold, counting_mode=COUNTING_MODE_LINES):
     '''
     Initialize object counter class and run counting loop.
     '''
@@ -58,6 +58,10 @@ def run(images_dict, detection_lines, video_path, weight_path, cfg_path, tracker
     import settings
     settings.YOLO_WEIGHTS_PATH = weight_path
     settings.YOLO_CONFIG_PATH = cfg_path
+    # CONFIDENCE
+    settings.YOLO_CONFIDENCE_THRESHOLD = yolo_conf
+    settings.NMS_THRESHOLD = nms_threshold
+    print("[DEBUG][run] Confidences: YOLO (",settings.YOLO_CONFIDENCE_THRESHOLD,") NMS (", settings.NMS_THRESHOLD, ")")
     # SET ENV VARIABLES (DETECTION LINES)
     print("[DEBUG][run] Detection lines:", detection_lines)
     settings.COUNTING_LINES = detection_lines

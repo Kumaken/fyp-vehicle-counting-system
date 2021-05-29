@@ -3,8 +3,9 @@ from PyQt5.QtWidgets import (QVBoxLayout, QLabel, QSlider, QGroupBox, QWidget)
 
 class Sliders(QWidget):
 
-    def __init__(self, name, slider_val=90, parent=None):
+    def __init__(self, name, slider_val=90, multiplier=1, parent=None):
         super().__init__(parent=parent) # HAS TO PASS PARENT SO THIS COULD GET UPDATED (valueChanged called)
+        self.multiplier = multiplier
         vbox = QVBoxLayout()
 
 
@@ -20,7 +21,7 @@ class Sliders(QWidget):
 
         vbox.addWidget(self.sl)
 
-        self.l1 = QLabel("Value: " + str(self.sl.value()))
+        self.l1 = QLabel("Value: " + str(self.sl.value() * self.multiplier))
         self.l1.setAlignment(Qt.AlignCenter)
         vbox.addWidget(self.l1)
 
@@ -35,7 +36,7 @@ class Sliders(QWidget):
         #self.size = self.sl.value()
         # self.__init__(value)
         # print("value changes detected")
-        self.l1.setText("Value: " + str(self.sl.value()));
+        self.l1.setText("Value: " + str(self.sl.value() * self.multiplier));
         #return self.size
 
     def getComponent(self):
@@ -45,5 +46,20 @@ class Sliders(QWidget):
         return self.sl.value();
 
     def setSliderValue(self, val):
-        self.sl.setValue(val)
+        self.sl.setValue(val / self.multiplier)
+        return self
+
+    def setSliderRange(self, minVal, maxVal, tick):
+        self.sl.setMinimum(minVal)
+        self.sl.setMaximum(maxVal)
+        self.sl.setTickInterval(tick)
+        return self
+
+    def setConnect(self, callback):
+        self.sl.valueChanged.connect(lambda val: callback(val*self.multiplier))
+        return self
+
+    def setMultiplier(self, val):
+        self.multiplier = val
+        return self
 

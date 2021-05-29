@@ -1,3 +1,4 @@
+from GUI.components.confidence_sliders import ConfidenceSliders
 from GUI.components.hsv_sliders import HSVSliders
 from GUI.components.counting_mode_radio_button import CountingModeRadioButton
 from GUI.components.tracker_selector import TrackerSelector
@@ -66,6 +67,11 @@ class DisplayImageWidget(QtWidgets.QWidget):
         # widgets
         self.path_widget = None
 
+        # confidence thresholds:
+        self.yolo_conf_threshold = None
+        self.nms_threshold = None
+        self.conf_sliders = None
+
         # SET
         self.setup_GUI()
 
@@ -122,6 +128,10 @@ class DisplayImageWidget(QtWidgets.QWidget):
         self.tracker_selector = TrackerSelector(self).setup()
         third_column.addLayout(self.tracker_selector.getLayout())
 
+        # confidence sliders
+        self.conf_sliders = ConfidenceSliders(self).setup()
+        third_column.addLayout(self.conf_sliders.getLayout())
+
         # paths widget
         self.path_widget = PathWidget(self)
         third_column.addLayout(self.path_widget.setup().getLayout())
@@ -150,6 +160,13 @@ class DisplayImageWidget(QtWidgets.QWidget):
 
     def setHighlightedLine(self, line_name):
         self.highlighted_line = line_name
+
+    def setYoloConfidenceThreshold(self, val):
+        # print("VAL:", val)
+        self.yolo_conf_threshold = float(val)
+
+    def setNMSThreshold(self, val):
+        self.nms_threshold = float(val)
 
     # getters:
     def getSourceImagePath(self):
@@ -193,6 +210,15 @@ class DisplayImageWidget(QtWidgets.QWidget):
 
     def getHighlightedLine(self):
         return self.highlighted_line
+
+    def getYoloConfidenceThreshold(self):
+        return self.yolo_conf_threshold
+
+    def getNMSThreshold(self):
+        return self.nms_threshold
+
+    def getConfSliders(self):
+        return self.conf_sliders
 
 def start_GUI():
     app = QtWidgets.QApplication(sys.argv)

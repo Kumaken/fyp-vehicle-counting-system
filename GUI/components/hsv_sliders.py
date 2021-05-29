@@ -34,7 +34,7 @@ class HSVSliders:
         grid = QGridLayout()
         sliders = self.parent.getSliders()
         for i in range(6):
-            slider = Sliders(SLIDER_LABELS[i], 1 if i<3 else 255, self.parent) # IMPORTANT: PASS SELF AS PARENT!
+            slider = Sliders(SLIDER_LABELS[i], 1 if i<3 else 255, parent=self.parent) # IMPORTANT: PASS SELF AS PARENT!
             slider.sl.valueChanged.connect(lambda: GUIUtils.refreshImage(self.parent, self.parent.getImagesDict(), self.parent.getLabelDict(), self.parent.getSliders()))
 
             sliders.append(slider)
