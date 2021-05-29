@@ -25,6 +25,7 @@ import settings
 with open(settings.YOLO_CLASSES_PATH, 'r') as classes_file:
     CLASSES = dict(enumerate([line.strip() for line in classes_file.readlines()]))
 
+parallel_pool = Parallel(n_jobs=4)
 class ObjectCounter():
     line_colors = [(255, 129, 61), (255, 255, 20), (98, 255, 20), (20, 255, 224), (20, 157, 255), (0, 26, 255), (64, 0, 255), (157, 0, 255), (255, 0, 247), (255, 0, 38), (255, 255, 255), (0, 0, 0)]
 
@@ -76,9 +77,11 @@ class ObjectCounter():
         blobs_list = list(self.blobs.items())
         # update blob trackers
         if self.tracker != NO_TRACKER:
-            blobs_list = Parallel(n_jobs=NUM_CORES, prefer='threads')(
-                delayed(update_blob_tracker)(blob, blob_id, self.frame) for blob_id, blob in blobs_list
-            )
+            # blobs_list = []
+            blobs_list = [update_blob_tracker(blob, blob_id, self.frame) for blob_id, blob in blobs_list]
+            #     parallel_pool(
+            #     delayed(update_blob_tracker)(blob, blob_id, self.frame)
+            # )
             self.blobs = dict(blobs_list)
 
         for blob_id, blob in blobs_list:
