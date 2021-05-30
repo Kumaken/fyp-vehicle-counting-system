@@ -11,7 +11,7 @@ from PyQt5.QtCore import Qt, QDir
 # import custom modules:
 from GUI.components.sliders import Sliders
 from GUI.utils import Utils
-from GUI.const import BUTTON_OPEN_IMG, BUTTON_SAVE_IMG, BUTTON_SAVE_CONFIG, BUTTON_CAPTURE_IMG, BUTTON_LOAD_CONFIG, BUTTON_START_DETECTION, CHOSEN_COUNTING_MODE, CHOSEN_TRACKER, DETECTION_INTERVAL, MCDF, MCTF, SOURCE_IMG_PATH, OUTPUT_IMG_CV2, OUTPUT_IMG_QT, MASK_IMG_CV2, SLIDER_LABELS, CSV_CONFIG_KEYS, SOURCE_IMG_CV2, PLACEHOLDER_IMG_PATH, BUTTON_LOAD_VIDEO, SOURCE_VIDEO_PATH, YOLO_CONFIG_PATH, YOLO_WEIGHT_PATH, YOLO_CONFIDENCE_THRESHOLD, NMS_THRESHOLD
+from GUI.const import BUTTON_OPEN_IMG, BUTTON_SAVE_IMG, BUTTON_SAVE_CONFIG, BUTTON_CAPTURE_IMG, BUTTON_LOAD_CONFIG, BUTTON_START_DETECTION, CHOSEN_COUNTING_MODE, CHOSEN_TRACKER, DETECTION_INTERVAL, MCDF, MCTF, SOURCE_IMG_C2_PREPROCESSED, SOURCE_IMG_PATH, OUTPUT_IMG_CV2, OUTPUT_IMG_QT, MASK_IMG_CV2, SLIDER_LABELS, CSV_CONFIG_KEYS, SOURCE_IMG_CV2, PLACEHOLDER_IMG_PATH, BUTTON_LOAD_VIDEO, SOURCE_VIDEO_PATH, YOLO_CONFIG_PATH, YOLO_WEIGHT_PATH, YOLO_CONFIDENCE_THRESHOLD, NMS_THRESHOLD
 from GUI.video_player import VideoPlayer
 
 class GUIUtils:
@@ -106,6 +106,7 @@ class GUIUtils:
     def setupSourceImage(images_dict, label_dict):
         try:
             images_dict[SOURCE_IMG_CV2] = cv2.imread(images_dict.SOURCE_IMG_PATH)
+            images_dict[SOURCE_IMG_C2_PREPROCESSED] = Utils.preProcess(images_dict[SOURCE_IMG_CV2])
             qt_src_image = Utils.convert_cv_qt(images_dict[SOURCE_IMG_CV2])
             qt_output_img = Utils.convert_cv_qt(images_dict[SOURCE_IMG_CV2], multiplier=3)
             # set qt image size
@@ -139,8 +140,8 @@ class GUIUtils:
                 lower = np.array([sliders[0].getSliderValue(), sliders[1].getSliderValue(), sliders[2].getSliderValue()], dtype="uint8")
                 upper = np.array([sliders[3].getSliderValue(), sliders[4].getSliderValue(), sliders[5].getSliderValue()], dtype="uint8")
 
-            hsv_img = cv2.cvtColor(images_dict[SOURCE_IMG_CV2], cv2.COLOR_BGR2HSV)
-            cv_hsv_mask = cv2.inRange(hsv_img, lower, upper)
+            preprocessed_img = images_dict[SOURCE_IMG_C2_PREPROCESSED]
+            cv_hsv_mask = cv2.inRange(preprocessed_img, lower, upper)
             qt_hsv_mask = Utils.convert_cv_qt(cv_hsv_mask)
 
             # update image
@@ -276,7 +277,6 @@ class GUIUtils:
     @staticmethod
     def refreshImage(parent, images_dict, label_dict, sliders=None):
         parent.getPathWidget().refreshLabels()
-        GUIUtils.setupSourceImage(images_dict, label_dict)
         GUIUtils.updateHSVMasking(images_dict, label_dict, sliders=sliders)
         GUIUtils.refreshLines(parent, label_dict, images_dict)
 
@@ -289,7 +289,8 @@ class GUIUtils:
         if (fileName):
             images_dict[SOURCE_IMG_PATH] = fileName
             parent.lines = [] # reset lines
-            GUIUtils.refreshImage(parent, images_dict, label_dict)
+            GUIUtils.setupSourceImage(images_dict, label_dict)
+            # GUIUtils.refreshImage(parent, images_dict, label_dict)
 
     @staticmethod
     def saveImageDialog(parent, image, cv=True):
@@ -402,6 +403,7 @@ class GUIUtils:
                 traceback.print_exc()
                 parent.lines = []
 
+            GUIUtils.setupSourceImage(images_dict, label_dict)
             GUIUtils.refreshImage(parent, images_dict, label_dict, sliders=sliders)
         except:
             print("Read config failed!")

@@ -4,9 +4,6 @@ from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
 from GUI.config import Config
 
-
-
-
 class Utils:
     @staticmethod
     def enhanceMask(mask):
@@ -37,7 +34,25 @@ class Utils:
         return maskROAD
 
     @staticmethod
+    def preProcess(img):
+        hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+
+        # using gaussian blur rule of thumb for kernel  size
+        means, stds = cv2.meanStdDev(hsv_img)
+        std_heuristic =  Utils.int_round_up_to_odd(stds.mean() * 2)
+
+        # apply gausian blur to smooth rough edges and reduce noisy edges
+        kernel_size = std_heuristic # must be positive and odd
+        gb_img = cv2.GaussianBlur(hsv_img, (kernel_size,kernel_size), 0)
+        return gb_img
+
+    # @staticmethod
+    # def process(img):
+
+
+    @staticmethod
     def post_process(img):
+
         kernel = np.ones((5, 5), np.uint8)
         img_out = cv2.erode(img, kernel,iterations=3)
         kernel = np.ones((20, 20), np.uint8)
@@ -62,3 +77,7 @@ class Utils:
         result = QtGui.QPixmap.fromImage(p)
 
         return result
+
+    @staticmethod
+    def int_round_up_to_odd(f):
+        return int(f // 2 * 2 + 1)

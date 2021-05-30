@@ -150,6 +150,7 @@ class DisplayImageWidget(QtWidgets.QWidget):
 
         # setup placeholder image:
         self.images_dict[SOURCE_IMG_PATH] = PLACEHOLDER_IMG_PATH
+        GUIUtils.setupSourceImage(self.images_dict, self.label_dict)
         GUIUtils.refreshImage(self, self.images_dict, self.label_dict, self.sliders)
 
     # setters
