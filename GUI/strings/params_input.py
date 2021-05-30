@@ -1,0 +1,12 @@
+DETECTION_INTERVAL_TOOLTIP= "Detection Interval (DI)"
+MCTF_TOOLTIP = "Max Consecutive Tracking Failure"
+MCDF_TOOLTIP = "Max Consecutive Detection Failure"
+
+
+DETECTION_INTERVAL_LABEL = "DI"
+MCTF_LABEL = "MCTF"
+MCDF_LABEL = "MCDF"
+
+DI_DEFAULT = "10"
+MCTF_DEFAULT = "3"
+MCDF_DEFAULT = "3"

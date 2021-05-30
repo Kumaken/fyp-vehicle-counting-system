@@ -11,7 +11,7 @@ from PyQt5.QtCore import Qt, QDir
 # import custom modules:
 from GUI.components.sliders import Sliders
 from GUI.utils import Utils
-from GUI.const import BUTTON_OPEN_IMG, BUTTON_SAVE_IMG, BUTTON_SAVE_CONFIG, BUTTON_CAPTURE_IMG, BUTTON_LOAD_CONFIG, BUTTON_START_DETECTION, CHOSEN_COUNTING_MODE, CHOSEN_TRACKER, SOURCE_IMG_PATH, OUTPUT_IMG_CV2, OUTPUT_IMG_QT, MASK_IMG_CV2, SLIDER_LABELS, CSV_CONFIG_KEYS, SOURCE_IMG_CV2, PLACEHOLDER_IMG_PATH, BUTTON_LOAD_VIDEO, SOURCE_VIDEO_PATH, YOLO_CONFIG_PATH, YOLO_WEIGHT_PATH, YOLO_CONFIDENCE_THRESHOLD, NMS_THRESHOLD
+from GUI.const import BUTTON_OPEN_IMG, BUTTON_SAVE_IMG, BUTTON_SAVE_CONFIG, BUTTON_CAPTURE_IMG, BUTTON_LOAD_CONFIG, BUTTON_START_DETECTION, CHOSEN_COUNTING_MODE, CHOSEN_TRACKER, DETECTION_INTERVAL, MCDF, MCTF, SOURCE_IMG_PATH, OUTPUT_IMG_CV2, OUTPUT_IMG_QT, MASK_IMG_CV2, SLIDER_LABELS, CSV_CONFIG_KEYS, SOURCE_IMG_CV2, PLACEHOLDER_IMG_PATH, BUTTON_LOAD_VIDEO, SOURCE_VIDEO_PATH, YOLO_CONFIG_PATH, YOLO_WEIGHT_PATH, YOLO_CONFIDENCE_THRESHOLD, NMS_THRESHOLD
 from GUI.video_player import VideoPlayer
 
 class GUIUtils:
@@ -328,6 +328,12 @@ class GUIUtils:
                 writer.writerow([YOLO_WEIGHT_PATH, parent.getWeightPath()])
                 writer.writerow([YOLO_CONFIG_PATH, parent.getCFGPath()])
 
+                # params
+                params = parent.getParamsInput().getParams()
+                writer.writerow([DETECTION_INTERVAL, params[DETECTION_INTERVAL]])
+                writer.writerow([MCTF, params[MCTF]])
+                writer.writerow([MCDF, params[MCDF]])
+
                 # counting mode
                 writer.writerow([CHOSEN_COUNTING_MODE, parent.getCountingMode()])
 
@@ -371,6 +377,12 @@ class GUIUtils:
                 # trackers
                 parent.setChosenTracker(config_dict.get(CHOSEN_TRACKER, parent.getChosenTracker()))
                 parent.getTrackerSelector().updateLabel()
+
+                # params
+                parent.setDI(config_dict.get(DETECTION_INTERVAL, parent.getDI()))
+                parent.setMCTF(config_dict.get(MCTF, parent.getMCTF()))
+                parent.setMCDF(config_dict.get(MCDF, parent.getMCDF()))
+                parent.getParamsInput().update()
 
                 # confidences & thresholds:
                 parent.setYoloConfidenceThreshold(config_dict.get(YOLO_CONFIDENCE_THRESHOLD, parent.getYoloConfidenceThreshold()))

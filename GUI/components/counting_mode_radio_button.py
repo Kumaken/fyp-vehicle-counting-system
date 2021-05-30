@@ -48,6 +48,8 @@ class CountingModeRadioButton:
             radioButtonLayout.addWidget(radioButton)
             self.radio_button_group.append(radioButton)
 
+        radioButton.setChecked(True)
+
         self.layout.addLayout(radioButtonLayout)
 
         return self

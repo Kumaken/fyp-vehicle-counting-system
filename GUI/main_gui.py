@@ -1,3 +1,4 @@
+from GUI.components.params_input import ParamsInput
 from GUI.components.confidence_sliders import ConfidenceSliders
 from GUI.components.hsv_sliders import HSVSliders
 from GUI.components.counting_mode_radio_button import CountingModeRadioButton
@@ -67,6 +68,11 @@ class DisplayImageWidget(QtWidgets.QWidget):
         # widgets
         self.path_widget = None
 
+        # params
+        self.di = None
+        self.mctf = None
+        self.mcdf = None
+
         # confidence thresholds:
         self.yolo_conf_threshold = 0.2
         self.nms_threshold = 0.4
@@ -128,6 +134,10 @@ class DisplayImageWidget(QtWidgets.QWidget):
         self.tracker_selector = TrackerSelector(self).setup()
         third_column.addLayout(self.tracker_selector.getLayout())
 
+        # params input
+        self.params_input = ParamsInput(self).setup()
+        third_column.addLayout(self.params_input.getLayout())
+
         # confidence sliders
         self.conf_sliders = ConfidenceSliders(self).setup()
         third_column.addLayout(self.conf_sliders.getLayout())
@@ -167,6 +177,15 @@ class DisplayImageWidget(QtWidgets.QWidget):
 
     def setNMSThreshold(self, val):
         self.nms_threshold = float(val)
+
+    def setDI(self, val):
+        self.di = val
+
+    def setMCTF(self, val):
+        self.mctf = val
+
+    def setMCDF(self, val):
+        self.mcdf = val
 
     # getters:
     def getSourceImagePath(self):
@@ -219,6 +238,18 @@ class DisplayImageWidget(QtWidgets.QWidget):
 
     def getConfSliders(self):
         return self.conf_sliders
+
+    def getDI(self):
+        return self.di
+
+    def getMCTF(self):
+        return self.mctf
+
+    def getMCDF(self):
+        return self.mcdf
+
+    def getParamsInput(self):
+        return self.params_input
 
 def start_GUI():
     app = QtWidgets.QApplication(sys.argv)
