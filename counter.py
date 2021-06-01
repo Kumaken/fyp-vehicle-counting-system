@@ -75,12 +75,14 @@ def attempt_count_lines(blob, blob_id, counting_lines, counts):
         label = counting_line['label']
         if _has_crossed_counting_line(blob.bounding_box, counting_line['line']) and \
                 label not in blob.lines_crossed:
+
             if blob.type in counts[label]:
                 counts[label][blob.type] += 1
             else:
                 counts[label][blob.type] = 1
 
             blob.lines_crossed.append(label)
+            print('CROSSED THE LINE', counts)
 
             # logger.info('Object counted.', extra={
             #     'meta': {

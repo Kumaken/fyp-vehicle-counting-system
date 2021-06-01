@@ -45,12 +45,13 @@ class ObjectCounter():
         self.frame_count = 0 # number of frames since last detection
         # counting modes:
         self.counting_mode = counting_mode
-        if self.counting_mode == COUNTING_MODE_LINES:
-            self.counts = {counting_line['label']: {} for counting_line in counting_lines} # counts of objects by type for each counting line
-        else:
-            self.counts = {}
-            with open(settings.YOLO_CLASSES_OF_INTEREST_PATH, 'r') as coi_file:
-                self.counts[COUNTING_MODE_ACTUAL_LABEL_NAME] = {line.strip(): 0 for line in coi_file.readlines()}
+        with open(settings.YOLO_CLASSES_OF_INTEREST_PATH, 'r') as coi_file:
+            classes = coi_file.readlines()
+            if self.counting_mode == COUNTING_MODE_LINES and len(counting_lines) != 0:
+                self.counts = {counting_line['label']: {line.strip(): 0 for line in classes} for counting_line in counting_lines} # counts of objects by type for each counting line
+            else: # actual mode
+                self.counts = {}
+                self.counts[COUNTING_MODE_ACTUAL_LABEL_NAME] = {line.strip(): 0 for line in classes}
 
         self.show_counts = show_counts
         self.hud_color = hud_color
@@ -78,22 +79,26 @@ class ObjectCounter():
         blobs_list = list(self.blobs.items())
         # update blob trackers
         if self.tracker != NO_TRACKER:
-            # blobs_list = []
-            # blobs_list = [update_blob_tracker(blob, blob_id, self.frame) for blob_id, blob in blobs_list]
-            blobs_list =parallel_pool(
-                delayed(update_blob_tracker)(blob, blob_id, self.frame) for blob_id, blob in blobs_list
-            )
+            blobs_list = [update_blob_tracker(blob, blob_id, self.frame) for blob_id, blob in blobs_list]
+            # blobs_list =parallel_pool(
+            #     delayed(update_blob_tracker)(blob, blob_id, self.frame) for blob_id, blob in blobs_list
+            # )
 
             self.blobs = dict(blobs_list)
 
         for blob_id, blob in blobs_list:
             if self.counting_mode == COUNTING_MODE_LINES:
                 # count object if it has crossed a counting line
-                blob, self.counts = attempt_count_lines(blob, blob_id, self.counting_lines, self.counts)
-                self.blobs[blob_id] = blob
+                # print("[DEBUG] counting lines", self.counting_lines)
+                if len(self.counting_lines) == 0:
+                    # incremental but without counting lines
+                    blob, self.counts = attempt_count_actual(blob, blob_id, self.counts)
+                else:
+                    blob, self.counts = attempt_count_lines(blob, blob_id, self.counting_lines, self.counts)
             elif self.counting_mode == COUNTING_MODE_ACTUAL:
                 blob, self.counts = attempt_count_actual(blob, blob_id, self.counts)
-                self.blobs[blob_id] = blob
+
+            self.blobs[blob_id] = blob
 
             # remove blob if it has reached the limit for tracking failures
             if blob.num_consecutive_tracking_failures >= self.mctf:
