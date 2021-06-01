@@ -190,7 +190,7 @@ class GUIUtils:
         buttons_dict[BUTTON_SAVE_IMG] = button_save
         buttons_layout.addWidget(button_save, 1, 4)
 
-        button_save_config = QPushButton('Save Mask Config', parent)
+        button_save_config = QPushButton('Save Config', parent)
         button_save_config.setToolTip('Select file path to save the sliders config into.')
         button_save_config.clicked.connect(lambda: GUIUtils.save_HSV_config_csv(parent, sliders, images_dict, parent.lines))
         buttons_dict[BUTTON_SAVE_CONFIG] = button_save_config
