@@ -10,6 +10,7 @@ from PyQt5.QtCore import Qt, QDir
 
 # import custom modules:
 from GUI.components.sliders import Sliders
+from GUI.config import Config
 from GUI.utils import Utils
 from GUI.const import BUTTON_OPEN_IMG, BUTTON_SAVE_IMG, BUTTON_SAVE_CONFIG, BUTTON_CAPTURE_IMG, BUTTON_LOAD_CONFIG, BUTTON_START_DETECTION, CHOSEN_COUNTING_MODE, CHOSEN_TRACKER, DETECTION_INTERVAL, MCDF, MCTF, SOURCE_IMG_C2_PREPROCESSED, SOURCE_IMG_PATH, OUTPUT_IMG_CV2, OUTPUT_IMG_QT, MASK_IMG_CV2, SLIDER_LABELS, CSV_CONFIG_KEYS, SOURCE_IMG_CV2, PLACEHOLDER_IMG_PATH, BUTTON_LOAD_VIDEO, SOURCE_VIDEO_PATH, YOLO_CONFIG_PATH, YOLO_WEIGHT_PATH, YOLO_CONFIDENCE_THRESHOLD, NMS_THRESHOLD
 from GUI.video_player import VideoPlayer
@@ -221,7 +222,7 @@ class GUIUtils:
                 return
 
         from main import run
-        run(images_dict, lines, video_path=video_path, weight_path=parent.getWeightPath(), cfg_path=parent.getCFGPath(), tracker=parent.getChosenTracker(), yolo_conf=parent.getYoloConfidenceThreshold(), nms_threshold=parent.getNMSThreshold(),counting_mode=parent.getCountingMode())
+        run(images_dict, (images_dict[SOURCE_IMG_CV2].shape[1::-1]), lines, video_path=video_path, weight_path=parent.getWeightPath(), cfg_path=parent.getCFGPath(), tracker=parent.getChosenTracker(), yolo_conf=parent.getYoloConfidenceThreshold(), nms_threshold=parent.getNMSThreshold(),counting_mode=parent.getCountingMode())
 
     @staticmethod
     def loadVideo(parent):

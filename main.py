@@ -45,7 +45,7 @@ def stop():
     stop_detection = True
     logger.info('Loop stopped.', extra={'meta': {'label': 'STOP_LOOP'}})
 
-def run(images_dict, detection_lines, video_path, weight_path, cfg_path, tracker, yolo_conf, nms_threshold, counting_mode=COUNTING_MODE_LINES):
+def run(images_dict, original_ratio, detection_lines, video_path, weight_path, cfg_path, tracker, yolo_conf, nms_threshold, counting_mode=COUNTING_MODE_LINES):
     '''
     Initialize object counter class and run counting loop.
     '''
@@ -75,6 +75,11 @@ def run(images_dict, detection_lines, video_path, weight_path, cfg_path, tracker
         })
         sys.exit()
     retval, frame = cap.read()
+    frame = cv2.resize(frame, (settings.IMG_SIZE, settings.IMG_SIZE))
+    v_width = cap.get(cv2.CAP_PROP_FRAME_WIDTH )
+    v_height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT )
+    v_fps = cap.get(cv2.CAP_PROP_FPS)
+    print("[DEBUG] V frame size", v_width, v_height, "FPS:", v_fps)
     f_height, f_width, _ = frame.shape
     detection_interval = settings.DI
     mcdf = settings.MCDF
@@ -88,7 +93,8 @@ def run(images_dict, detection_lines, video_path, weight_path, cfg_path, tracker
     # droi = settings.DROI \
     #         if use_droi \
     #         else [(0, 0), (f_width, 0), (f_width, f_height), (0, f_height)]
-    droi = images_dict[MASK_IMG_CV2]
+    droi = cv2.resize(images_dict[MASK_IMG_CV2], (settings.IMG_SIZE, settings.IMG_SIZE))
+    resized_mask = cv2.resize(images_dict[MASK_IMG_CV2], settings.DEBUG_WINDOW_SIZE)
 
     show_droi = settings.SHOW_DROI
     counting_lines = settings.COUNTING_LINES
@@ -98,7 +104,7 @@ def run(images_dict, detection_lines, video_path, weight_path, cfg_path, tracker
     # initialize control gui:
     detector_gui = DetectorGUI().setup()
 
-    object_counter = ObjectCounter(frame, detector, tracker, droi, show_droi, mcdf, mctf,
+    object_counter = ObjectCounter(frame, original_ratio, detector, tracker, droi, show_droi, mcdf, mctf,
                                    detection_interval, counting_lines, show_counts, hud_color, detector_gui,counting_mode=counting_mode)
 
     record = settings.RECORD
@@ -179,7 +185,7 @@ def run(images_dict, detection_lines, video_path, weight_path, cfg_path, tracker
 
             # OBJECT COUNTER STARTS:
             object_counter.count(frame) # bottleneck is here
-            output_frame = object_counter.visualize()
+
 
             # Calculating the fps
             new_frame_time = time.time()
@@ -202,8 +208,11 @@ def run(images_dict, detection_lines, video_path, weight_path, cfg_path, tracker
             if not headless:
                 debug_window_size = settings.DEBUG_WINDOW_SIZE
                 # resized_frame = cv2.resize(frame, debug_window_size)
-                resized_frame = cv2.resize(output_frame, debug_window_size)
-                cv2.imshow(window_name, resized_frame)
+                resized_frame = cv2.resize(frame, debug_window_size)
+                output_frame = object_counter.visualize(resized_frame, resized_mask)
+                cv2.imshow(window_name, output_frame)
+
+
 
             # processing_frame_rate = round(cv2.getTickFrequency() / (cv2.getTickCount() - _timer), 2)
             frames_processed += 1
@@ -219,6 +228,7 @@ def run(images_dict, detection_lines, video_path, weight_path, cfg_path, tracker
 
 
             retval, frame = cap.read()
+            frame = cv2.resize(frame, (settings.IMG_SIZE, settings.IMG_SIZE))
     finally:
         # end capture, close window, close log file and video object if any
         cap.release()

@@ -3,7 +3,7 @@ Object Counter class.
 '''
 
 # pylint: disable=missing-class-docstring,missing-function-docstring,invalid-name
-
+import copy
 from GUI.strings.tracker_options import NO_TRACKER
 from consts.object_counter import COUNTING_MODE_ACTUAL, COUNTING_MODE_ACTUAL_LABEL_NAME, COUNTING_MODE_LINES
 import multiprocessing
@@ -30,16 +30,35 @@ parallel_pool = Parallel(n_jobs=8, prefer="threads")
 class ObjectCounter():
     line_colors = [(255, 129, 61), (255, 255, 20), (98, 255, 20), (20, 255, 224), (20, 157, 255), (0, 26, 255), (64, 0, 255), (157, 0, 255), (255, 0, 247), (255, 0, 38), (255, 255, 255), (0, 0, 0)]
 
-    def __init__(self, initial_frame, detector, tracker, droi, show_droi, mcdf, mctf, di, counting_lines, show_counts, hud_color, detector_gui,  counting_mode=COUNTING_MODE_ACTUAL):
-        self.frame = initial_frame # current frame of video
+    def rescale_counting_lines(self, counting_lines_, target_ratio):
+        counting_lines = copy.deepcopy(counting_lines_)
+        ratio_w = target_ratio[0] / self.ori_ratio_w
+        ratio_h = target_ratio[1] / self.ori_ratio_h
+
+        for line in counting_lines:
+            for i, point in enumerate(line['line']):
+                line['line'][i] = (int(point[0] * ratio_w), int(point[1] * ratio_h))
+
+        return counting_lines
+
+    def rescale_bounding_boxes(self, x, y, w, h, target_ratio):
+        ratio_w = target_ratio[0] / settings.IMG_SIZE
+        ratio_h = target_ratio[1] / settings.IMG_SIZE
+        return int(x*ratio_w), int(y*ratio_h), int(w*ratio_w), int(h*ratio_h)
+
+    def __init__(self, initial_frame, original_ratio, detector, tracker, droi, show_droi, mcdf, mctf, di, counting_lines, show_counts, hud_color, detector_gui,  counting_mode=COUNTING_MODE_ACTUAL):
+        self.frame = initial_frame  # current frame of video
+        self.ori_ratio_w, self.ori_ratio_h = original_ratio
         self.detector = detector
         self.tracker = tracker
-        self.droi = droi # detection region of interest
+        self.droi = droi  # detection region of interest
         self.show_droi = show_droi
         self.mcdf = mcdf # maximum consecutive detection failures
         self.mctf = mctf # maximum consecutive tracking failures
         self.detection_interval = di
-        self.counting_lines = counting_lines
+        self.counting_lines = self.rescale_counting_lines(counting_lines, (settings.IMG_SIZE, settings.IMG_SIZE))
+        self.counting_lines_scaled = self.rescale_counting_lines(counting_lines, settings.DEBUG_WINDOW_SIZE) # self.rescale_counting_lines(counting_lines)
+        print("[DEBUG] rescaled counting lines",self.counting_lines)
         self.blobs = {}
         self.f_height, self.f_width, _ = self.frame.shape
         self.frame_count = 0 # number of frames since last detection
@@ -127,33 +146,38 @@ class ObjectCounter():
         return (255,255,255)
 
 
-    def visualize(self):
-        frame = self.frame
+    def visualize(self, frame, mask):
+        frame = frame
         font = cv2.FONT_HERSHEY_DUPLEX
+        font_scale = 0.5
+        font_thickness = 1
+        line_thickness = 3
+        line_font_scale = 1
         line_type = cv2.LINE_AA
 
         # draw and label blob bounding boxes
         for _id, blob in self.blobs.items():
             color = self.object_color_picker(blob.type)
             (x, y, w, h) = [int(v) for v in blob.bounding_box]
-            cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
+            x, y, w, h = self.rescale_bounding_boxes(x, y, w, h, settings.DEBUG_WINDOW_SIZE)
+            cv2.rectangle(frame, (x, y), (x + w, y + h), color, font_thickness)
             object_label = 'I: ' + _id[:8] \
                             if blob.type is None \
                             else '{0} ({1})'.format(blob.type, str(blob.type_confidence)[:4])
-            cv2.putText(frame, object_label, (x, y - 5), font, 1, color, 2, line_type)
+            cv2.putText(frame, object_label, (x, y - 5), font, font_scale, color, font_thickness, line_type)
 
         if self.counting_mode == COUNTING_MODE_LINES:
             # draw counting lines
-            for i, counting_line in enumerate(self.counting_lines):
+            for i, counting_line in enumerate(self.counting_lines_scaled):
                 color_idx = i % len(self.line_colors)
-                cv2.line(frame, counting_line['line'][0], counting_line['line'][1], self.line_colors[color_idx], 3)
+                cv2.line(frame, counting_line['line'][0], counting_line['line'][1], self.line_colors[color_idx], line_thickness)
                 cl_label_origin = (counting_line['line'][0][0], counting_line['line'][0][1] + 35)
-                cv2.putText(frame, counting_line['label'], cl_label_origin, font, 1, self.line_colors[color_idx], 2, line_type)
+                cv2.putText(frame, counting_line['label'], cl_label_origin, font, line_font_scale, self.line_colors[color_idx], font_thickness, line_type)
 
         # show detection roi
         # CHANGE
         if self.show_droi:
-            frame = draw_roi(frame, self.droi)
+            frame = draw_roi(frame, mask)
 
         # show counts
         # if self.show_counts:
