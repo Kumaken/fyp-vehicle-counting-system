@@ -93,8 +93,8 @@ def run(images_dict, original_ratio, detection_lines, video_path, weight_path, c
     # droi = settings.DROI \
     #         if use_droi \
     #         else [(0, 0), (f_width, 0), (f_width, f_height), (0, f_height)]
-    droi = images_dict[MASK_IMG_CV2] # cv2.resize(images_dict[MASK_IMG_CV2], (settings.IMG_SIZE, settings.IMG_SIZE))
-    # resized_mask = cv2.resize(images_dict[MASK_IMG_CV2], settings.DEBUG_WINDOW_SIZE)
+    droi = cv2.resize(images_dict[MASK_IMG_CV2], (settings.IMG_SIZE, settings.IMG_SIZE))
+    resized_mask = cv2.resize(images_dict[MASK_IMG_CV2], settings.DEBUG_WINDOW_SIZE)
 
     show_droi = settings.SHOW_DROI
     counting_lines = settings.COUNTING_LINES
@@ -185,8 +185,9 @@ def run(images_dict, original_ratio, detection_lines, video_path, weight_path, c
             _timer = cv2.getTickCount() # set timer to calculate processing frame rate
 
             # OBJECT COUNTER STARTS:
+            frame = cv2.resize(frame, (settings.IMG_SIZE, settings.IMG_SIZE))
             object_counter.count(frame) # bottleneck is here
-            output_frame = object_counter.visualize()
+
 
             # Calculating the fps
             new_frame_time = time.time()
@@ -215,8 +216,11 @@ def run(images_dict, original_ratio, detection_lines, video_path, weight_path, c
             if not headless:
                 debug_window_size = settings.DEBUG_WINDOW_SIZE
                 # resized_frame = cv2.resize(frame, debug_window_size)
-                resized_frame = cv2.resize(output_frame, debug_window_size)
-                cv2.imshow(window_name, resized_frame)
+                resized_frame = cv2.resize(frame, debug_window_size)
+                output_frame = object_counter.visualize(resized_frame, resized_mask)
+                cv2.imshow(window_name, output_frame)
+
+
 
 
 
@@ -234,6 +238,7 @@ def run(images_dict, original_ratio, detection_lines, video_path, weight_path, c
 
 
             retval, frame = cap.read()
+
     finally:
         # end capture, close window, close log file and video object if any
         cap.release()
