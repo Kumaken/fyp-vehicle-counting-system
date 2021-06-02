@@ -241,13 +241,13 @@ class DisplayImageWidget(QtWidgets.QWidget):
         return self.conf_sliders
 
     def getDI(self):
-        return self.di
+        return int(self.di) if self.di else self.di
 
     def getMCTF(self):
-        return self.mctf
+        return int(self.mctf) if self.mctf else self.mctf
 
     def getMCDF(self):
-        return self.mcdf
+        return int(self.mcdf) if self.mcdf else self.mcdf
 
     def getParamsInput(self):
         return self.params_input

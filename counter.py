@@ -82,7 +82,7 @@ def attempt_count_lines(blob, blob_id, counting_lines, counts):
                 counts[label][blob.type] = 1
 
             blob.lines_crossed.append(label)
-            print('CROSSED THE LINE', counts)
+            # print('CROSSED THE LINE', counts)
 
             # logger.info('Object counted.', extra={
             #     'meta': {

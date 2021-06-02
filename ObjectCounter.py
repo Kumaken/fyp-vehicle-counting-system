@@ -98,6 +98,8 @@ class ObjectCounter():
         blobs_list = list(self.blobs.items())
         # update blob trackers
         if self.tracker != NO_TRACKER:
+            # conv to bgr
+            # grayscale_frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
             blobs_list = [update_blob_tracker(blob, blob_id, self.frame) for blob_id, blob in blobs_list]
             # blobs_list =parallel_pool(
             #     delayed(update_blob_tracker)(blob, blob_id, self.frame) for blob_id, blob in blobs_list

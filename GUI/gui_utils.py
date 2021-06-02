@@ -221,8 +221,13 @@ class GUIUtils:
                 print("videofile invalid!")
                 return
 
+        params = parent.getParamsInput().getParams()
+        parent.setDI(params.get(DETECTION_INTERVAL, parent.getDI()))
+        parent.setMCTF(params.get(MCTF, parent.getMCTF()))
+        parent.setMCDF(params.get(MCDF, parent.getMCDF()))
+
         from main import run
-        run(images_dict, (images_dict[SOURCE_IMG_CV2].shape[1::-1]), lines, video_path=video_path, weight_path=parent.getWeightPath(), cfg_path=parent.getCFGPath(), tracker=parent.getChosenTracker(), yolo_conf=parent.getYoloConfidenceThreshold(), nms_threshold=parent.getNMSThreshold(),counting_mode=parent.getCountingMode())
+        run(images_dict, (images_dict[SOURCE_IMG_CV2].shape[1::-1]), lines, video_path=video_path, weight_path=parent.getWeightPath(), cfg_path=parent.getCFGPath(), tracker=parent.getChosenTracker(), yolo_conf=parent.getYoloConfidenceThreshold(), nms_threshold=parent.getNMSThreshold(),counting_mode=parent.getCountingMode(), di=parent.getDI(), mctf_=parent.getMCTF(), mcdf_=parent.getMCDF())
 
     @staticmethod
     def loadVideo(parent):

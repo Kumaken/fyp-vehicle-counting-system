@@ -15,10 +15,14 @@ class ParamsInput:
         return self.layout
 
     def update(self):
-        self.di.setText(self.parent.getDI())
-        self.mctf.setText(self.parent.getMCTF())
-        self.mcdf.setText(self.parent.getMCDF())
+        self.di.setText(str(self.parent.getDI()))
+        self.mctf.setText(str(self.parent.getMCTF()))
+        self.mcdf.setText(str(self.parent.getMCDF()))
 
+    def updateParent(self):
+        self.parent.setDI(self.di)
+        self.parent.setMCTF(self.mctf)
+        self.parent.setMCDF(self.mcdf)
 
     def getParams(self):
         return dict(DETECTION_INTERVAL=int(self.di.text()), MCTF=int(self.mctf.text()), MCDF=int(self.mcdf.text()))

@@ -45,7 +45,7 @@ def stop():
     stop_detection = True
     logger.info('Loop stopped.', extra={'meta': {'label': 'STOP_LOOP'}})
 
-def run(images_dict, original_ratio, detection_lines, video_path, weight_path, cfg_path, tracker, yolo_conf, nms_threshold, counting_mode=COUNTING_MODE_LINES):
+def run(images_dict, original_ratio, detection_lines, video_path, weight_path, cfg_path, tracker, yolo_conf, nms_threshold, counting_mode=COUNTING_MODE_LINES, di=settings.DI, mctf_=settings.MCTF, mcdf_=settings.MCDF):
     '''
     Initialize object counter class and run counting loop.
     '''
@@ -81,9 +81,9 @@ def run(images_dict, original_ratio, detection_lines, video_path, weight_path, c
     v_fps = cap.get(cv2.CAP_PROP_FPS)
     print("[DEBUG] V frame size", v_width, v_height, "FPS:", v_fps)
     f_height, f_width, _ = frame.shape
-    detection_interval = settings.DI
-    mcdf = settings.MCDF
-    mctf = settings.MCTF
+    detection_interval = di
+    mcdf = mcdf_
+    mctf = mctf_
     detector = settings.DETECTOR
     print("TRACKER", tracker)
     tracker = tracker or settings.TRACKER
@@ -163,6 +163,7 @@ def run(images_dict, original_ratio, detection_lines, video_path, weight_path, c
         # main loop
         # print("IS STOP? ", stop_detection)
         while not stop_detection and retval:
+
             # 0xFF is a hexadecimal constant which is 11111111 in binary. Bitwise AND with 0xFF extracts 8 bits from cv2.waitKey (which returns 32 bits)
             # waitKey(0) function returns -1 when no input is made. When a button is pressed, it returns a 32 bit integer
             # waitKey(0) means shows indefinitely until keypress. waitKey(1) means it shows only for 1 ms
