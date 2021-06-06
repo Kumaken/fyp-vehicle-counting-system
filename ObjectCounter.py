@@ -30,16 +30,16 @@ with open(settings.YOLO_CLASSES_PATH, 'r') as classes_file:
 class ObjectCounter():
     line_colors = [(255, 129, 61), (255, 255, 20), (98, 255, 20), (20, 255, 224), (20, 157, 255), (0, 26, 255), (64, 0, 255), (157, 0, 255), (255, 0, 247), (255, 0, 38), (255, 255, 255), (0, 0, 0)]
 
-    # def rescale_counting_lines(self, counting_lines_, target_ratio):
-    #     counting_lines = copy.deepcopy(counting_lines_)
-    #     ratio_w = target_ratio[0] / self.ori_ratio_w
-    #     ratio_h = target_ratio[1] / self.ori_ratio_h
+    def rescale_counting_lines(self, counting_lines_, target_ratio):
+        counting_lines = copy.deepcopy(counting_lines_)
+        ratio_w = target_ratio[0] / self.ori_ratio_w
+        ratio_h = target_ratio[1] / self.ori_ratio_h
 
-    #     for line in counting_lines:
-    #         for i, point in enumerate(line['line']):
-    #             line['line'][i] = (int(point[0] * ratio_w), int(point[1] * ratio_h))
+        for line in counting_lines:
+            for i, point in enumerate(line['line']):
+                line['line'][i] = (int(point[0] * ratio_w), int(point[1] * ratio_h))
 
-    #     return counting_lines
+        return counting_lines
 
     # def rescale_bounding_boxes(self, x, y, w, h, target_ratio):
     #     ratio_w = target_ratio[0] / settings.IMG_SIZE
@@ -56,7 +56,7 @@ class ObjectCounter():
         self.mcdf = mcdf # maximum consecutive detection failures
         self.mctf = mctf # maximum consecutive tracking failures
         self.detection_interval = di
-        self.counting_lines = counting_lines # self.rescale_counting_lines(counting_lines, (settings.IMG_SIZE, settings.IMG_SIZE))
+        self.counting_lines = self.rescale_counting_lines(counting_lines, (settings.IMG_SIZE, settings.IMG_SIZE)) # counting_lines #
         # self.counting_lines_scaled = self.rescale_counting_lines(counting_lines, settings.DEBUG_WINDOW_SIZE) # self.rescale_counting_lines(counting_lines)
         # print("[DEBUG] rescaled counting lines",self.counting_lines)
         self.blobs = {}

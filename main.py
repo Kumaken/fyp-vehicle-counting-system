@@ -193,7 +193,13 @@ def run(images_dict, original_ratio, detection_lines, video_path, weight_path, c
             # fps will be number of frame processed in given time frame
             # since their will be most of time error of 0.001 second
             # we will be subtracting it to get more accurate result
-            fps = 1/(new_frame_time-prev_frame_time)
+            try:
+                new_fps = 1/(new_frame_time-prev_frame_time)
+            except:
+                # do nothing (too fast!)
+                new_fps = fps
+            fps = new_fps
+
             prev_frame_time = new_frame_time
 
             # converting the fps into integer and then to string
